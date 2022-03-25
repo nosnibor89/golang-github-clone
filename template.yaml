@@ -7,8 +7,8 @@ Resources:
   createRepo:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: createRepo
-      CodeUri: src/handlers/createRepo
+      Handler: createrepo
+      CodeUri: src/handlers/createrepo
       Runtime: go1.x
       MemorySize: 128
       Timeout: 100
