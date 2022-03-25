@@ -1,0 +1,26 @@
+// import Repo from "../model/Repo";
+// import {DynamoDB} from "aws-sdk";
+// import {PutItemInput} from "aws-sdk/clients/dynamodb";
+// import GithubRepo from "./items/GithubRepo.txt";
+//
+// const documentClient = new DynamoDB.DocumentClient();
+//
+// export class GithubRepository {
+//     async create(repo: Repo): Promise<Repo> {
+//         const params: PutItemInput = {
+//             TableName: process.env.TABLE_NAME,
+//             Item: new GithubRepo(
+//                 repo.name,
+//                 repo.owner.username,
+//                 repo.description,
+//                 new Date(),
+//                 new Date(),
+//             ).toItem(),
+//             ReturnValues: 'ALL_NEW',
+//             ConditionExpression: 'attribute_not_exists(PK)'
+//         }
+//
+//         const created = await documentClient.put(params).promise();
+//         return GithubRepo.itemToModel(created.Attributes)
+//     }
+// }

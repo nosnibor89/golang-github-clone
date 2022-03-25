@@ -1,0 +1,9 @@
+Entity,PK,SK,GSI1PK,GSI1SK,GSI2PK,GSI2SK,Note
+Repos,REPO#<OwnerName>#<RepoName>,REPO#<OwnerName>#<RepoName>,REPO#<RepoName>,REPO#<RepoName>,,,
+Issues,REPO#<RepoName>,ISSUE#<ZeroPaddedIssueNumber>,,,,,
+Pull Request,PR#<ZeroPaddedPullRequestNumber>,PR#<ZeroPaddedPullRequestNumber>,REPO#<RepoName>,PR#<ZeroPaddedPullRequestNumber>,,,
+Comments,,,,,,,
+Forks,,,,,,,
+Users,,,,,,,
+Organization,,,,,,,
+PaymentPlans,,,,,,,
