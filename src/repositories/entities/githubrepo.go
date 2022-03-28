@@ -50,8 +50,6 @@ func (repo GithubRepo) ToItem() (Attrs, error) {
 
 	itemAttrs := ad.allAttributes()
 
-	fmt.Println(itemAttrs)
-
 	return itemAttrs, nil
 }
 

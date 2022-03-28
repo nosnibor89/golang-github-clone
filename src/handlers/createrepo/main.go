@@ -12,13 +12,6 @@ import (
 )
 
 func handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	//fmt.Printf("Processing request data for request %s.\n", request.RequestContext.RequestID)
-	//fmt.Printf("Body size = %d.\n", len(request.Body))
-	//fmt.Println("Headers:")
-	//for key, value := range request.Headers {
-	//	fmt.Printf("    %s: %s\n", key, value)
-	//}
-	var requestError error
 	var body string
 	statusCode := 201
 
@@ -26,10 +19,11 @@ func handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 
 	repo := model.Repo{}
 
+	//TODO: Find re-usability for error handling
 	if err := json.Unmarshal([]byte(request.Body), &repo); err != nil {
 		msg := fmt.Sprintf("Could not parse body correctly %v\n", err)
 		fmt.Println(msg)
-		requestError = err
+		statusCode = util.HttpErrorFromException(err).Code
 		statusCode = 400
 		body = msg
 	}
@@ -40,21 +34,21 @@ func handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 	newRepo, err := repository.Create(repo)
 
 	if err != nil {
-		return events.APIGatewayProxyResponse{Body: "Error creating repo", StatusCode: 500}, err
+		httpError := util.HttpErrorFromException(err)
+		return events.APIGatewayProxyResponse{Body: httpError.Message, StatusCode: httpError.Code}, nil
 	}
 
 	if decoded, err := json.Marshal(newRepo); err != nil {
 		msg := fmt.Sprintf("Could not parse created repo %v\n", err)
 		fmt.Println(msg)
-		requestError = err
-		statusCode = 500
+		statusCode = util.HttpErrorFromException(err).Code
 		body = msg
 	} else {
 		fmt.Println("A new repo was created")
 		body = string(decoded)
 	}
 
-	return events.APIGatewayProxyResponse{Body: body, StatusCode: statusCode}, requestError
+	return events.APIGatewayProxyResponse{Body: body, StatusCode: statusCode}, nil
 }
 
 func main() {

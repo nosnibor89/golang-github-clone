@@ -1,9 +1,10 @@
 {
-  "body": "{\n    \"name\": \"Rob\"\n  }",
+  "body": "{\n    \"name\": \"github-clone\",\n    \"description\": \"Github clone for dynamodb\"\n}",
   "queryStringParameters": {},
   "multiValueQueryStringParameters": {},
   "headers": {
-    "ContentType": "application/json"
+    "ContentType": "application/json",
+    "Authorization": "nosnibor1989"
   },
   "requestContext": {
     "accountId": "123456789012",

@@ -1,9 +1,9 @@
 package repositories
 
 import (
-	"fmt"
 	"github-clone/src/model"
 	"github-clone/src/repositories/entities"
+	"github-clone/src/util"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"os"
@@ -20,12 +20,17 @@ const (
 
 type GithubRepository struct{}
 
+func (repo GithubRepository) tableName() *string {
+	return aws.String(os.Getenv(tableNameEnvVar))
+}
+
 func (repo GithubRepository) Create(newRepo model.Repo) (model.Repo, error) {
 	repoEntity := entities.GithubRepo{
-		Name:      newRepo.Name,
-		Owner:     newRepo.Owner.Username,
-		UpdatedAt: time.Now(),
-		CreatedAt: time.Now(),
+		Name:        newRepo.Name,
+		Owner:       newRepo.Owner.Username,
+		Description: newRepo.Description,
+		UpdatedAt:   time.Now(),
+		CreatedAt:   time.Now(),
 	}
 
 	item, err := repoEntity.ToItem()
@@ -34,13 +39,11 @@ func (repo GithubRepository) Create(newRepo model.Repo) (model.Repo, error) {
 		return model.Repo{}, nil
 	}
 
-	fmt.Println("tableNameEnvVar")
-	fmt.Println(os.Getenv(tableNameEnvVar))
-
 	params := &dynamodb.PutItemInput{
-		TableName:    aws.String(os.Getenv(tableNameEnvVar)),
-		Item:         item,
-		ReturnValues: aws.String(dynamodb.ReturnValueNone),
+		TableName:           repo.tableName(),
+		Item:                item,
+		ReturnValues:        aws.String(dynamodb.ReturnValueNone),
+		ConditionExpression: util.GenerateAttrNotExistsExpression("PK"),
 	}
 
 	putItemOutput, err := dynamoDbClient.PutItem(params)
@@ -59,7 +62,7 @@ func (repo GithubRepository) Delete(name, owner string) error {
 	}
 
 	params := &dynamodb.DeleteItemInput{
-		TableName:    aws.String(os.Getenv(tableNameEnvVar)),
+		TableName:    repo.tableName(),
 		Key:          entity.Key(),
 		ReturnValues: aws.String(dynamodb.ReturnValueNone),
 	}
