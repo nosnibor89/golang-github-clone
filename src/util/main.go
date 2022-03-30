@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go/aws"
 	"strings"
+	"time"
 )
 
 type HttpError struct {
@@ -64,4 +65,37 @@ func HttpErrorFromException(e error) HttpError {
 		Code:    500,
 		Message: "Error creating entity",
 	}
+}
+
+func ParseTimeAttr(datetime string) time.Time {
+	parsed, err := time.Parse(time.RFC3339, datetime)
+	if err != nil {
+		fmt.Printf("Count not parse time for value %v\n", datetime)
+		return time.Date(1997, time.January, 1, 1, 1, 1, 1, time.UTC)
+	}
+
+	return parsed
+}
+
+func ParseTimeItem(datetime time.Time) string {
+	return datetime.Format(time.RFC3339)
+}
+
+//TODO: Move this to it's own package/file
+var reset = "\033[0m"
+var red = "\033[31m"
+var green = "\033[32m"
+var yellow = "\033[33m"
+var blue = "\033[34m"
+var purple = "\033[35m"
+var cyan = "\033[36m"
+var gray = "\033[37m"
+var white = "\033[97m"
+
+func PrintRed(data interface{}) {
+	fmt.Printf("%s %v %s\n", red, data, reset)
+}
+
+func PrintCyan(data interface{}) {
+	fmt.Printf("%s %v %s\n", cyan, data, reset)
 }

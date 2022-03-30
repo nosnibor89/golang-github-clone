@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	commands2 "github-clone/src/github-clone-cli/commands"
+	repoCommands "github-clone/src/github-clone-cli/commands/repos"
 	cliUtil "github-clone/src/github-clone-cli/util"
 	"github-clone/src/util"
 	"os"
@@ -32,7 +33,8 @@ func parse(args []string) error {
 	}
 
 	commands := []commands2.Runner{
-		commands2.NewDeleteRepoCommand(),
+		repoCommands.NewDeleteRepoCommand(),
+		repoCommands.NewFindOneRepoCommand(),
 	}
 
 	subcommand := os.Args[1]

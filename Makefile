@@ -3,7 +3,7 @@ start-api: build start-local-api
 
 invoke-function: build invoke
 
-cli:
+install-cli:
 	cd ./src/github-clone-cli && go install
 
 build:

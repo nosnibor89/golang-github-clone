@@ -3,6 +3,8 @@ package entities
 import (
 	"fmt"
 	"github-clone/src/model"
+	util2 "github-clone/src/util"
+	"github.com/aws/aws-sdk-go/aws"
 	"strings"
 	"time"
 )
@@ -44,8 +46,8 @@ func (repo GithubRepo) ToItem() (Attrs, error) {
 	ad.withStringAttribute("Name", repo.Name).
 		withStringAttribute("Owner", repo.Owner).
 		withStringAttribute("Description", repo.Description).
-		withStringAttribute("CreatedAt", repo.CreatedAt.String()).
-		withStringAttribute("UpdatedAt", repo.UpdatedAt.String()).
+		withStringAttribute("CreatedAt", util2.ParseTimeItem(repo.CreatedAt)).
+		withStringAttribute("UpdatedAt", util2.ParseTimeItem(repo.UpdatedAt)).
 		withSecondaryIndexKey(1, gs1, gs1)
 
 	itemAttrs := ad.allAttributes()
@@ -53,13 +55,28 @@ func (repo GithubRepo) ToItem() (Attrs, error) {
 	return itemAttrs, nil
 }
 
-func (repo GithubRepo) ToModel(_ Attrs) model.Repo {
-	repoModel := model.Repo{
-		Name:        repo.Name,
-		Owner:       model.User{Username: repo.Owner, Name: repo.Owner},
-		Description: repo.Description,
-		UpdatedAt:   repo.UpdatedAt,
-		CreatedAt:   repo.CreatedAt,
+func (repo GithubRepo) ToModel(attrs Attrs) model.Repo {
+	var repoModel model.Repo
+
+	if attrs["Name"] != nil && attrs["Owner"] != nil {
+		owner := aws.StringValue(attrs["Owner"].S)
+		repoModel = model.Repo{
+			Name:        aws.StringValue(attrs["Name"].S),
+			Owner:       model.User{Username: owner, Name: owner},
+			Description: aws.StringValue(attrs["Description"].S),
+			UpdatedAt:   util2.ParseTimeAttr(aws.StringValue(attrs["UpdatedAt"].S)),
+			CreatedAt:   util2.ParseTimeAttr(aws.StringValue(attrs["CreatedAt"].S)),
+		}
+
+	} else {
+		repoModel = model.Repo{
+			Name:        repo.Name,
+			Owner:       model.User{Username: repo.Owner, Name: repo.Owner},
+			Description: repo.Description,
+			UpdatedAt:   repo.UpdatedAt,
+			CreatedAt:   repo.CreatedAt,
+		}
 	}
+
 	return repoModel
 }

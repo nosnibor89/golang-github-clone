@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"fmt"
 	"github-clone/src/model"
 	"github-clone/src/repositories/entities"
 	"github-clone/src/util"
@@ -22,6 +23,31 @@ type GithubRepository struct{}
 
 func (repo GithubRepository) tableName() *string {
 	return aws.String(os.Getenv(tableNameEnvVar))
+}
+
+func (repo GithubRepository) FindOne(name, owner string) model.Repo {
+	entity := entities.GithubRepo{
+		Name:  name,
+		Owner: owner,
+	}
+
+	input := &dynamodb.GetItemInput{
+		TableName: repo.tableName(),
+		Key:       entity.Key(),
+	}
+
+	itemOutput, err := dynamoDbClient.GetItem(input)
+
+	if err != nil {
+		fmt.Println("Error occurred find one repo", err)
+		return model.Repo{}
+	}
+
+	if itemOutput.Item == nil {
+		return model.Repo{}
+	}
+
+	return entity.ToModel(itemOutput.Item)
 }
 
 func (repo GithubRepository) Create(newRepo model.Repo) (model.Repo, error) {
