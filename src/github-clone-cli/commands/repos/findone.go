@@ -7,7 +7,6 @@ import (
 	"github-clone/src/repositories"
 	util2 "github-clone/src/util"
 	"github.com/aws/aws-sdk-go/aws/awsutil"
-	"reflect"
 )
 
 const (
@@ -40,7 +39,7 @@ func (command *FindOneRepoCommand) Run() error {
 	repository := repositories.GithubRepository{}
 	found := repository.FindOne(command.repo, cliUtil.GetCLIUser())
 
-	if reflect.ValueOf(found).IsZero() {
+	if util2.IsModelEmpty(found) {
 		util2.PrintRed(fmt.Sprintf("No repo found with name %v", command.repo))
 	} else {
 		util2.PrintCyan(awsutil.Prettify(found))

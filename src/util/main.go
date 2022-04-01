@@ -5,6 +5,7 @@ import (
 	"github-clone/src/model"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go/aws"
+	"reflect"
 	"strings"
 	"time"
 )
@@ -98,4 +99,8 @@ func PrintRed(data interface{}) {
 
 func PrintCyan(data interface{}) {
 	fmt.Printf("%s %v %s\n", cyan, data, reset)
+}
+
+func IsModelEmpty(model interface{}) bool {
+	return reflect.ValueOf(model).IsZero()
 }

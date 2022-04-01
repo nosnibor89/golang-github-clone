@@ -26,6 +26,28 @@ Resources:
           Properties:
             Path: /repos
             Method: POST
+  getRepo:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: getrepo
+      CodeUri: src/handlers/getrepo
+      Runtime: go1.x
+      MemorySize: 128
+      Timeout: 100
+      Description: Gets a Repo
+      Policies:
+        - CloudWatchLambdaInsightsExecutionRolePolicy
+        - DynamoDBCrudPolicy:
+            TableName: !Ref githubCloneTable
+      Environment:
+        Variables:
+          GITHUB_TABLE_NAME: !Ref githubCloneTable
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /repos/{owner}/{repo}
+            Method: GET
   githubCloneTable:
     Type: AWS::DynamoDB::Table        
     Properties:
