@@ -16,4 +16,4 @@ invoke:
 	sam local invoke $(name) -e $(event) --env-vars env.local.json
 
 start-local-api:
-	sam local start-api --env-vars env.local.json
+	sam local start-api --env-vars env.local.json -p 3003

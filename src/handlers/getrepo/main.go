@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"github-clone/src/repositories"
-	"github-clone/src/util"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"log"
@@ -12,7 +11,7 @@ import (
 
 //TODO: At this point any use can ask for any other user's repo which is what github does but maybe we need to handle that in a different way
 
-func handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func handleRequest(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 
 	repository := repositories.GithubRepository{}
 
@@ -21,7 +20,7 @@ func handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 
 	found := repository.FindOne(repo, owner)
 
-	if util.IsModelEmpty(found) {
+	if found.IsEmpty() {
 		log.Printf("repo with owner %s and name %s was not found", owner, repo)
 		return events.APIGatewayProxyResponse{
 			StatusCode: 404,

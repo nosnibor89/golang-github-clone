@@ -47,7 +47,7 @@ func (repo GithubRepository) FindOne(name, owner string) model.Repo {
 		return model.Repo{}
 	}
 
-	return entity.ToModel(itemOutput.Item)
+	return entity.ToModelFromAttrs(itemOutput.Item)
 }
 
 func (repo GithubRepository) Create(newRepo model.Repo) (model.Repo, error) {
@@ -72,13 +72,11 @@ func (repo GithubRepository) Create(newRepo model.Repo) (model.Repo, error) {
 		ConditionExpression: util.GenerateAttrNotExistsExpression("PK"),
 	}
 
-	putItemOutput, err := dynamoDbClient.PutItem(params)
-
-	if err != nil {
+	if _, err = dynamoDbClient.PutItem(params); err != nil {
 		return model.Repo{}, err
 	}
 
-	return repoEntity.ToModel(putItemOutput.Attributes), nil
+	return repoEntity.ToModel(), nil
 }
 
 func (repo GithubRepository) Delete(name, owner string) error {

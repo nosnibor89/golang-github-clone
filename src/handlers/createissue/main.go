@@ -16,23 +16,22 @@ func handleRequest(_ context.Context, request events.APIGatewayProxyRequest) (ev
 
 	user := model.GetUserFromRequest(request)
 
-	repo := model.Repo{}
+	issue := model.Issue{}
+	issue.FromJSON(request.Body)
+	issue.WithCreator(user)
 
-	repo.FromJSON(request.Body)
-	repo.Owner = user
-
-	repository := repositories.GithubRepository{}
-	newRepo, err := repository.Create(repo)
+	repository := repositories.IssueRepository{}
+	newIssue, err := repository.Create(issue)
 
 	if err != nil {
 		httpError := util.HttpErrorFromException(err)
 		return events.APIGatewayProxyResponse{Body: httpError.Message, StatusCode: httpError.Code}, nil
 	}
 
-	decodingError, body := newRepo.ToJSON()
+	decodingError, body := newIssue.ToJSON()
 
 	if decodingError.Error == nil {
-		statusCode = 201
+		statusCode = 200
 		fmt.Println("A new repo was created")
 	}
 

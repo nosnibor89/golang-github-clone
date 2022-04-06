@@ -55,12 +55,14 @@ func (repo GithubRepo) ToItem() (Attrs, error) {
 	return itemAttrs, nil
 }
 
-func (repo GithubRepo) ToModel(attrs Attrs) model.Repo {
+func (repo GithubRepo) ToModelFromAttrs(attrs Attrs) model.Repo {
 	var repoModel model.Repo
-
 	if attrs["Name"] != nil && attrs["Owner"] != nil {
 		owner := aws.StringValue(attrs["Owner"].S)
 		repoModel = model.Repo{
+			Model: model.Model{
+				Identifier: aws.StringValue(attrs["Name"].S),
+			},
 			Name:        aws.StringValue(attrs["Name"].S),
 			Owner:       model.User{Username: owner, Name: owner},
 			Description: aws.StringValue(attrs["Description"].S),
@@ -68,15 +70,20 @@ func (repo GithubRepo) ToModel(attrs Attrs) model.Repo {
 			CreatedAt:   util2.ParseTimeAttr(aws.StringValue(attrs["CreatedAt"].S)),
 		}
 
-	} else {
-		repoModel = model.Repo{
-			Name:        repo.Name,
-			Owner:       model.User{Username: repo.Owner, Name: repo.Owner},
-			Description: repo.Description,
-			UpdatedAt:   repo.UpdatedAt,
-			CreatedAt:   repo.CreatedAt,
-		}
 	}
+	return repoModel
+}
 
+func (repo GithubRepo) ToModel() model.Repo {
+	repoModel := model.Repo{
+		Model: model.Model{
+			Identifier: repo.Name,
+		},
+		Name:        repo.Name,
+		Owner:       model.User{Username: repo.Owner, Name: repo.Owner},
+		Description: repo.Description,
+		UpdatedAt:   repo.UpdatedAt,
+		CreatedAt:   repo.CreatedAt,
+	}
 	return repoModel
 }

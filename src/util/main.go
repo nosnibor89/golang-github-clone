@@ -2,10 +2,7 @@ package util
 
 import (
 	"fmt"
-	"github-clone/src/model"
-	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go/aws"
-	"reflect"
 	"strings"
 	"time"
 )
@@ -30,14 +27,6 @@ func MergeMaps[K string | int64, V any](maps ...map[K]V) map[K]V {
 
 func StringIsEmpty(text string) bool {
 	return len(text) == 0
-}
-
-func GetUserFromRequest(request events.APIGatewayProxyRequest) model.User {
-	user := request.Headers["Authorization"]
-	return model.User{
-		Username: user,
-		Name:     user,
-	}
 }
 
 func GenerateAttrNotExistsExpression(fields ...string) *string {
@@ -85,13 +74,15 @@ func ParseTimeItem(datetime time.Time) string {
 //TODO: Move this to it's own package/file
 var reset = "\033[0m"
 var red = "\033[31m"
-var green = "\033[32m"
-var yellow = "\033[33m"
-var blue = "\033[34m"
-var purple = "\033[35m"
+
+//var green = "\033[32m"
+//var yellow = "\033[33m"
+//var blue = "\033[34m"
+//var purple = "\033[35m"
 var cyan = "\033[36m"
-var gray = "\033[37m"
-var white = "\033[97m"
+
+//var gray = "\033[37m"
+//var white = "\033[97m"
 
 func PrintRed(data interface{}) {
 	fmt.Printf("%s %v %s\n", red, data, reset)
@@ -99,8 +90,4 @@ func PrintRed(data interface{}) {
 
 func PrintCyan(data interface{}) {
 	fmt.Printf("%s %v %s\n", cyan, data, reset)
-}
-
-func IsModelEmpty(model interface{}) bool {
-	return reflect.ValueOf(model).IsZero()
 }

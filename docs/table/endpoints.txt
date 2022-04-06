@@ -1,0 +1,8 @@
+Repos
+    Create Repo: POST /repos
+    Get Repo: GET /repos/{owner}/{repo}
+
+Issues
+    Create Issue: POST repos/{owner}/{repo}/issues
+    Get Issue: GET repos/{owner}/{repo}/issues/{issueNumber}
+    Repo Issues: GET repo/{owner}/{repo}/issues

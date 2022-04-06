@@ -4,6 +4,8 @@ Description: >-
   github-clone
 
 Resources:
+
+  #  Handlers Definition
   createRepo:
     Type: AWS::Serverless::Function
     Properties:
@@ -48,8 +50,32 @@ Resources:
           Properties:
             Path: /repos/{owner}/{repo}
             Method: GET
+  createIssue:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: createissue
+      CodeUri: src/handlers/createissue
+      Runtime: go1.x
+      MemorySize: 128
+      Timeout: 100
+      Description: Creates an Issue for a Repo
+      Policies:
+        - CloudWatchLambdaInsightsExecutionRolePolicy
+        - DynamoDBCrudPolicy:
+            TableName: !Ref githubCloneTable
+      Environment:
+        Variables:
+          GITHUB_TABLE_NAME: !Ref githubCloneTable
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /repos/{owner}/{repo}/issues
+            Method: POST
+
+  #            Table Definition
   githubCloneTable:
-    Type: AWS::DynamoDB::Table        
+    Type: AWS::DynamoDB::Table
     Properties:
       AttributeDefinitions:
         - AttributeName: "PK"
