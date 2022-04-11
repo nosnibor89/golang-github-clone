@@ -3,8 +3,8 @@ package repos
 import (
 	"flag"
 	"fmt"
-	cliUtil "github-clone/src/github-clone-cli/util"
-	"github-clone/src/repositories"
+	"github-clone/src/database"
+	cliUtil "github-clone/src/github-clone-cli/config"
 	util2 "github-clone/src/util"
 	"github.com/aws/aws-sdk-go/aws/awsutil"
 )
@@ -36,10 +36,10 @@ func (command *FindOneRepoCommand) Run() error {
 		return err
 	}
 
-	repository := repositories.GithubRepository{}
+	repository := database.Repository{}
 	found := repository.FindOne(command.repo, cliUtil.GetCLIUser())
 
-	if util2.IsModelEmpty(found) {
+	if found == nil {
 		util2.PrintRed(fmt.Sprintf("No repo found with name %v", command.repo))
 	} else {
 		util2.PrintCyan(awsutil.Prettify(found))

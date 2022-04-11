@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"github-clone/src/repositories"
+	"github-clone/src/database"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"log"
@@ -13,14 +13,14 @@ import (
 
 func handleRequest(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 
-	repository := repositories.GithubRepository{}
+	repository := database.Repository{}
 
 	repo := request.PathParameters["repo"]
 	owner := request.PathParameters["owner"]
 
 	found := repository.FindOne(repo, owner)
 
-	if found.IsEmpty() {
+	if found == nil {
 		log.Printf("repo with owner %s and name %s was not found", owner, repo)
 		return events.APIGatewayProxyResponse{
 			StatusCode: 404,

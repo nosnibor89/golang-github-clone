@@ -2,30 +2,16 @@ package entities
 
 import (
 	"fmt"
-	"github-clone/src/util"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"time"
 )
 
 type Attrs = map[string]*dynamodb.AttributeValue
 
-type Entity interface {
-	ToItem() Attrs
+type Entity struct {
+	CreatedAt, UpdatedAt time.Time
 }
-
-//func (k key) keyToItemMap() Attrs {
-//	keyAttrs := make(Attrs)
-//	err := mapstructure.Decode(k, &keyAttrs)
-//	if err != nil {
-//		panic(err)
-//	}
-//
-//	return keyAttrs
-//}
-
-//func newAttrDefinition() attrDefinition {
-//
-//}
 
 type attrDefinition struct {
 	pk, sk, typeLabel string
@@ -58,6 +44,17 @@ func (attrDefinition *attrDefinition) withStringAttribute(name, value string) *a
 	return attrDefinition
 }
 
+func (attrDefinition *attrDefinition) withIntAttribute(name string, value string) *attrDefinition {
+	if len(attrDefinition.extraAttrs) == 0 {
+		attrDefinition.extraAttrs = make(Attrs)
+	}
+
+	attrDefinition.extraAttrs[name] = &dynamodb.AttributeValue{
+		N: aws.String(value),
+	}
+	return attrDefinition
+}
+
 func (attrDefinition *attrDefinition) withSecondaryIndexKey(index int, partitionKeyValue, sortKeyValue string) *attrDefinition {
 	secondaryPartitionKey := fmt.Sprintf("GS%dPK", index)
 	secondarySortKey := fmt.Sprintf("GS%dSK", index)
@@ -66,7 +63,7 @@ func (attrDefinition *attrDefinition) withSecondaryIndexKey(index int, partition
 		secondaryPartitionKey: {S: aws.String(partitionKeyValue)},
 		secondarySortKey:      {S: aws.String(sortKeyValue)},
 	}
-	attrDefinition.extraAttrs = util.MergeMaps(attrDefinition.extraAttrs, secondaryIndexKey)
+	attrDefinition.extraAttrs = mergeAttrs(attrDefinition.extraAttrs, secondaryIndexKey)
 	return attrDefinition
 }
 
@@ -74,6 +71,32 @@ func (attrDefinition *attrDefinition) allAttributes() Attrs {
 	primaryKeyAttrs := attrDefinition.getPrimaryKey()
 	typeAttr := attrDefinition.getType()
 
-	allAttrs := util.MergeMaps(primaryKeyAttrs, typeAttr, attrDefinition.extraAttrs)
+	allAttrs := mergeAttrs(primaryKeyAttrs, typeAttr, attrDefinition.extraAttrs)
 	return allAttrs
+}
+
+func parseTimeAttr(datetime string) time.Time {
+	parsed, err := time.Parse(time.RFC3339, datetime)
+	if err != nil {
+		fmt.Printf("Count not parse time for value %v\n", datetime)
+		return time.Date(1997, time.January, 1, 1, 1, 1, 1, time.UTC)
+	}
+
+	return parsed
+}
+
+func parseTimeItem(datetime time.Time) string {
+	return datetime.Format(time.RFC3339)
+}
+
+func mergeAttrs[K string | int64, V any](maps ...map[K]V) map[K]V {
+	newMap := make(map[K]V)
+
+	for _, currentMap := range maps {
+		for key, value := range currentMap {
+			newMap[key] = value
+		}
+	}
+
+	return newMap
 }

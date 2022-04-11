@@ -5,7 +5,7 @@ import (
 	"fmt"
 	commands2 "github-clone/src/github-clone-cli/commands"
 	repoCommands "github-clone/src/github-clone-cli/commands/repos"
-	cliUtil "github-clone/src/github-clone-cli/util"
+	cliUtil "github-clone/src/github-clone-cli/config"
 	"github-clone/src/util"
 	"os"
 )
