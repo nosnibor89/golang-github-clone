@@ -14,19 +14,23 @@ import (
 type Issue struct {
 }
 
+type IssueFindOneInput struct {
+	Repo, Owner, IssueNumber string
+}
+
 const noIssueNumber = "could not assign issue number"
 
-func (issue Issue) Create(newIssue model.Issue) (*model.Issue, error) {
-	issueNumber, err := issue.getIssueNumberFromRepo(newIssue.Repo.Name, newIssue.Repo.Owner.Username)
+func (i Issue) Create(newIssue model.Issue) (*model.Issue, error) {
+	issueNumber, err := i.getIssueNumberFromRepo(newIssue.Repo.Name, newIssue.Repo.Owner.Username)
 	if err != nil {
 		return nil, err
 	}
 
 	newIssue.IssueNumber = issueNumber
-	return issue.createIssue(newIssue)
+	return i.createIssue(newIssue)
 }
 
-func (issue Issue) GetIssues(repo, owner, status string) (*model.Repo, []model.Issue, error) {
+func (i Issue) GetIssues(repo, owner, status string) (*model.Repo, []model.Issue, error) {
 	var issues []model.Issue
 	shouldLookOpenIssues := status == "" || strings.ToUpper(strings.TrimSpace(status)) == entities.IssueOpenStatus
 
@@ -73,7 +77,35 @@ func (issue Issue) GetIssues(repo, owner, status string) (*model.Repo, []model.I
 	return &repoValue, issues, nil
 }
 
-func (issue Issue) createIssue(newIssue model.Issue) (*model.Issue, error) {
+func (i Issue) FindOne(input IssueFindOneInput) (*model.Issue, error) {
+	issueNumber, err := strconv.Atoi(input.IssueNumber)
+	if err != nil {
+		return nil, fmt.Errorf("could find issue %w", err)
+	}
+
+	item := entities.Issue{
+		IssueNumber: issueNumber,
+		RepoName:    input.Repo,
+		RepoOwner:   input.Owner,
+	}
+
+	dynamoInput := &dynamodb.GetItemInput{
+		TableName: tableName(),
+		Key:       item.Key(),
+	}
+
+	itemOutput, err := dynamoDbClient.GetItem(dynamoInput)
+
+	if err != nil || itemOutput.Item == nil {
+		return nil, fmt.Errorf("could not find issue. error %v, item:: %v\n", err, itemOutput.Item)
+	}
+
+	issueValue := item.ToModelFromAttrs(itemOutput.Item)
+
+	return &issueValue, nil
+}
+
+func (i Issue) createIssue(newIssue model.Issue) (*model.Issue, error) {
 	issueEntity := entities.NewIssue(
 		newIssue.Title,
 		newIssue.Content,
@@ -105,7 +137,7 @@ func (issue Issue) createIssue(newIssue model.Issue) (*model.Issue, error) {
 	return &created, err
 }
 
-func (issue Issue) updateRepo(repo, owner string) (map[string]*dynamodb.AttributeValue, error) {
+func (i Issue) updateRepo(repo, owner string) (map[string]*dynamodb.AttributeValue, error) {
 	repoEntity := entities.GithubRepo{
 		Name:  repo,
 		Owner: owner,
@@ -139,9 +171,9 @@ func (issue Issue) updateRepo(repo, owner string) (map[string]*dynamodb.Attribut
 	return updated.Attributes, nil
 }
 
-func (issue Issue) getIssueNumberFromRepo(repo, owner string) (int, error) {
+func (i Issue) getIssueNumberFromRepo(repo, owner string) (int, error) {
 	var issueNumber int
-	updatedAttrs, err := issue.updateRepo(repo, owner)
+	updatedAttrs, err := i.updateRepo(repo, owner)
 	if err != nil {
 		return issueNumber, err
 	}

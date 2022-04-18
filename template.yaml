@@ -96,6 +96,29 @@ Resources:
             Path: /repos/{owner}/{repo}/issues
             Method: GET
 
+  getRepoIssue:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: getissue
+      CodeUri: src/handlers/getissue
+      Runtime: go1.x
+      MemorySize: 128
+      Timeout: 100
+      Description: Get the Issues for a Repo
+      Policies:
+        - CloudWatchLambdaInsightsExecutionRolePolicy
+        - DynamoDBCrudPolicy:
+            TableName: !Ref githubCloneTable
+      Environment:
+        Variables:
+          GITHUB_TABLE_NAME: !Ref githubCloneTable
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /repos/{owner}/{repo}/issues/{issueNumber}
+            Method: GET
+
   #            Table Definition
   githubCloneTable:
     Type: AWS::DynamoDB::Table
