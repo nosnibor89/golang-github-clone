@@ -3,6 +3,7 @@ package errors
 import (
 	"errors"
 	"github-clone/src/model"
+	"net/http"
 	"strings"
 )
 
@@ -19,20 +20,20 @@ func (m HttpError) Error() string {
 func HttpErrorFromException(e error) HttpError {
 	if strings.Contains(e.Error(), "ConditionalCheckFailedException:") {
 		return HttpError{
-			Code:    409,
-			Message: "entity already exists",
+			Code:    http.StatusConflict,
+			Message: "item already exists",
 		}
 	}
 
 	if errors.Is(e, model.EncodingError) {
 		return HttpError{
-			Code:    400,
+			Code:    http.StatusBadRequest,
 			Message: "could parse content in request correctly",
 		}
 	}
 
 	return HttpError{
-		Code:    500,
-		Message: "error creating entity",
+		Code:    http.StatusInternalServerError,
+		Message: "error processing request",
 	}
 }

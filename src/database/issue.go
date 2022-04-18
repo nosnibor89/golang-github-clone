@@ -6,7 +6,9 @@ import (
 	"github-clone/src/model"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"log"
 	"strconv"
+	"strings"
 )
 
 type Issue struct {
@@ -24,10 +26,58 @@ func (issue Issue) Create(newIssue model.Issue) (*model.Issue, error) {
 	return issue.createIssue(newIssue)
 }
 
+func (issue Issue) GetIssues(repo, owner, status string) (*model.Repo, []model.Issue, error) {
+	var issues []model.Issue
+	shouldLookOpenIssues := status == "" || strings.ToUpper(strings.TrimSpace(status)) == entities.IssueOpenStatus
+
+	entity := entities.Issue{
+		RepoOwner: owner,
+		RepoName:  repo,
+	}
+
+	input := &dynamodb.QueryInput{
+		TableName:              tableName(),
+		KeyConditionExpression: aws.String("#pk = :pk"),
+		ExpressionAttributeNames: map[string]*string{
+			"#pk":   aws.String("PK"),
+			"#open": aws.String("Open"),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":pk": {
+				S: aws.String(entity.PartitionKey()),
+			},
+			":open": {
+				BOOL: aws.Bool(shouldLookOpenIssues),
+			},
+		},
+		ScanIndexForward:       aws.Bool(false),
+		FilterExpression:       aws.String("(attribute_not_exists(#open)) OR (#open = :open)"),
+		ReturnConsumedCapacity: aws.String(dynamodb.ReturnConsumedCapacityTotal),
+	}
+
+	queryOutput, err := dynamoDbClient.Query(input)
+
+	if err != nil {
+		return nil, issues, fmt.Errorf("error fetching issues: %w", err)
+	}
+
+	repoItem, issueItems := queryOutput.Items[0], queryOutput.Items[1:]
+
+	log.Printf("[Trace]ScannedCount: %d", *queryOutput.ScannedCount)
+	log.Printf("[Trace]Count: %d", *queryOutput.Count)
+	issues = entity.ToIssueList(issueItems)
+
+	repoEntity := entities.GithubRepo{}
+
+	repoValue := repoEntity.ToModelFromAttrs(repoItem)
+	return &repoValue, issues, nil
+}
+
 func (issue Issue) createIssue(newIssue model.Issue) (*model.Issue, error) {
 	issueEntity := entities.NewIssue(
 		newIssue.Title,
 		newIssue.Content,
+		newIssue.Repo.Name,
 		newIssue.Repo.Owner.Username,
 		newIssue.Creator.Username,
 		newIssue.IssueNumber,

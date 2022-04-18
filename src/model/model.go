@@ -14,18 +14,18 @@ var (
 )
 
 type Model struct {
-	Identifier string
+	CreatedAt time.Time `json:"createdAt,omitempty"`
+	UpdatedAt time.Time `json:"updatedAt,omitempty"`
 }
 
 type Issue struct {
 	Model
-	IssueNumber int       `json:"issueNumber"`
-	Creator     User      `json:"creator"`
-	Title       string    `json:"title"`
-	Content     string    `json:"content"`
-	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedAt   time.Time `json:"updatedAt"`
-	Repo        Repo
+	IssueNumber int    `json:"issueNumber"`
+	Creator     User   `json:"creator"`
+	Title       string `json:"title"`
+	Content     string `json:"content"`
+	Open        bool   `json:"open"`
+	Repo        Repo   `json:"-"`
 }
 
 func (issue *Issue) WithCreator(user User) {
@@ -42,11 +42,9 @@ func (issue Issue) ToJSON() (string, error) {
 
 type Repo struct {
 	Model
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	Owner       User      `json:"owner"`
-	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedAt   time.Time `json:"updatedAt"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Owner       User   `json:"owner"`
 }
 
 func (model *Repo) FromJSON(json string) error {
@@ -58,6 +56,7 @@ func (model Repo) ToJSON() (string, error) {
 }
 
 type User struct {
+	Model
 	Name     string `json:"name"`
 	Username string `json:"username"`
 }

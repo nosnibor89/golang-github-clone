@@ -44,6 +44,17 @@ func (attrDefinition *attrDefinition) withStringAttribute(name, value string) *a
 	return attrDefinition
 }
 
+func (attrDefinition *attrDefinition) withBoolAttribute(name string, value bool) *attrDefinition {
+	if len(attrDefinition.extraAttrs) == 0 {
+		attrDefinition.extraAttrs = make(Attrs)
+	}
+
+	attrDefinition.extraAttrs[name] = &dynamodb.AttributeValue{
+		BOOL: aws.Bool(value),
+	}
+	return attrDefinition
+}
+
 func (attrDefinition *attrDefinition) withIntAttribute(name string, value string) *attrDefinition {
 	if len(attrDefinition.extraAttrs) == 0 {
 		attrDefinition.extraAttrs = make(Attrs)

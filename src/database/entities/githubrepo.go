@@ -54,13 +54,12 @@ func (repo GithubRepo) ToModelFromAttrs(attrs Attrs) model.Repo {
 		owner := aws.StringValue(attrs["Owner"].S)
 		repoModel = model.Repo{
 			Model: model.Model{
-				Identifier: aws.StringValue(attrs["Name"].S),
+				UpdatedAt: parseTimeAttr(aws.StringValue(attrs["UpdatedAt"].S)),
+				CreatedAt: parseTimeAttr(aws.StringValue(attrs["CreatedAt"].S)),
 			},
 			Name:        aws.StringValue(attrs["Name"].S),
 			Owner:       model.User{Username: owner, Name: owner},
 			Description: aws.StringValue(attrs["Description"].S),
-			UpdatedAt:   parseTimeAttr(aws.StringValue(attrs["UpdatedAt"].S)),
-			CreatedAt:   parseTimeAttr(aws.StringValue(attrs["CreatedAt"].S)),
 		}
 
 	}
@@ -70,13 +69,12 @@ func (repo GithubRepo) ToModelFromAttrs(attrs Attrs) model.Repo {
 func (repo GithubRepo) ToModel() model.Repo {
 	repoModel := model.Repo{
 		Model: model.Model{
-			Identifier: repo.Name,
+			UpdatedAt: repo.UpdatedAt,
+			CreatedAt: repo.CreatedAt,
 		},
 		Name:        repo.Name,
 		Owner:       model.User{Username: repo.Owner, Name: repo.Owner},
 		Description: repo.Description,
-		UpdatedAt:   repo.UpdatedAt,
-		CreatedAt:   repo.CreatedAt,
 	}
 	return repoModel
 }

@@ -2,21 +2,24 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github-clone/src/database"
 	"github-clone/src/errors"
 	"github-clone/src/model"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"net/http"
+)
+
+var (
+	repo = model.Repo{}
+	db   = database.Repository{}
 )
 
 func handleRequest(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	var body string
-	statusCode := 201
+	statusCode := http.StatusCreated
 
 	user := model.GetUserFromRequest(request)
-
-	repo := model.Repo{}
 
 	if err := repo.FromJSON(request.Body); err != nil {
 		httpError := errors.HttpErrorFromException(err)
@@ -24,9 +27,7 @@ func handleRequest(_ context.Context, request events.APIGatewayProxyRequest) (ev
 	}
 
 	repo.Owner = user
-
-	repository := database.Repository{}
-	newRepo, err := repository.Create(repo)
+	newRepo, err := db.Create(repo)
 
 	if err != nil {
 		httpError := errors.HttpErrorFromException(err)
@@ -35,9 +36,9 @@ func handleRequest(_ context.Context, request events.APIGatewayProxyRequest) (ev
 
 	body, decodingError := newRepo.ToJSON()
 
-	if decodingError == nil {
-		statusCode = 201
-		fmt.Println("A new repo was created")
+	if decodingError != nil {
+		httpError := errors.HttpErrorFromException(decodingError)
+		return events.APIGatewayProxyResponse{Body: httpError.Message, StatusCode: httpError.Code}, nil
 	}
 
 	return events.APIGatewayProxyResponse{Body: body, StatusCode: statusCode}, nil
