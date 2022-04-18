@@ -10,6 +10,7 @@ func StringIsEmpty(text string) bool {
 
 var reset = "\033[0m"
 var red = "\033[31m"
+var yellow = "\033[43m"
 var cyan = "\033[36m"
 
 func PrintRed(data interface{}) {
@@ -18,4 +19,8 @@ func PrintRed(data interface{}) {
 
 func PrintCyan(data interface{}) {
 	fmt.Printf("%s %v %s\n", cyan, data, reset)
+}
+
+func LogYellow(data interface{}) {
+	fmt.Printf("%s %v %s\n", yellow, data, reset)
 }

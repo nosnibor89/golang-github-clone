@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github-clone/src/database/entities"
 	"github-clone/src/model"
+	"github-clone/src/util"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"log"
@@ -41,13 +42,17 @@ func (i Issue) GetIssues(repo, owner, status string) (*model.Repo, []model.Issue
 
 	input := &dynamodb.QueryInput{
 		TableName:              tableName(),
-		KeyConditionExpression: aws.String("#pk = :pk"),
+		KeyConditionExpression: aws.String("#pk = :pk AND #sk <= :sk"),
 		ExpressionAttributeNames: map[string]*string{
 			"#pk":   aws.String("PK"),
+			"#sk":   aws.String("SK"),
 			"#open": aws.String("Open"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":pk": {
+				S: aws.String(entity.PartitionKey()),
+			},
+			":sk": {
 				S: aws.String(entity.PartitionKey()),
 			},
 			":open": {
@@ -67,8 +72,12 @@ func (i Issue) GetIssues(repo, owner, status string) (*model.Repo, []model.Issue
 
 	repoItem, issueItems := queryOutput.Items[0], queryOutput.Items[1:]
 
-	log.Printf("[Trace]ScannedCount: %d", *queryOutput.ScannedCount)
-	log.Printf("[Trace]Count: %d", *queryOutput.Count)
+	if *queryOutput.ScannedCount > *queryOutput.Count {
+		util.LogYellow("WARNING: ScannedCount is greater than Count")
+		log.Printf("[Trace]ScannedCount: %d", *queryOutput.ScannedCount)
+		log.Printf("[Trace]Count: %d", *queryOutput.Count)
+	}
+
 	issues = entity.ToIssueList(issueItems)
 
 	repoEntity := entities.GithubRepo{}
