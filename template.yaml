@@ -3,6 +3,17 @@ Transform: AWS::Serverless-2016-10-31
 Description: >-
   github-clone
 
+
+Globals:
+  Function:
+    Runtime: go1.x
+    MemorySize: 128
+    Timeout: 100
+    Environment:
+      Variables:
+        GITHUB_TABLE_NAME: !Ref githubCloneTable
+
+
 Resources:
 
   #  Handlers Definition
@@ -11,17 +22,11 @@ Resources:
     Properties:
       Handler: createrepo
       CodeUri: src/handlers/createrepo
-      Runtime: go1.x
-      MemorySize: 128
-      Timeout: 100
       Description: Creates a Repo
       Policies:
         - CloudWatchLambdaInsightsExecutionRolePolicy
         - DynamoDBCrudPolicy:
             TableName: !Ref githubCloneTable
-      Environment:
-        Variables:
-          GITHUB_TABLE_NAME: !Ref githubCloneTable
       Events:
         ApiEvent:
           Type: Api
@@ -33,90 +38,114 @@ Resources:
     Properties:
       Handler: getrepo
       CodeUri: src/handlers/getrepo
-      Runtime: go1.x
-      MemorySize: 128
-      Timeout: 100
       Description: Gets a Repo
       Policies:
         - CloudWatchLambdaInsightsExecutionRolePolicy
         - DynamoDBCrudPolicy:
             TableName: !Ref githubCloneTable
-      Environment:
-        Variables:
-          GITHUB_TABLE_NAME: !Ref githubCloneTable
       Events:
         ApiEvent:
           Type: Api
           Properties:
             Path: /repos/{owner}/{repo}
             Method: GET
+
   createIssue:
     Type: AWS::Serverless::Function
     Properties:
       Handler: createissue
       CodeUri: src/handlers/createissue
-      Runtime: go1.x
-      MemorySize: 128
-      Timeout: 100
       Description: Creates an Issue for a Repo
       Policies:
         - CloudWatchLambdaInsightsExecutionRolePolicy
         - DynamoDBCrudPolicy:
             TableName: !Ref githubCloneTable
-      Environment:
-        Variables:
-          GITHUB_TABLE_NAME: !Ref githubCloneTable
       Events:
         ApiEvent:
           Type: Api
           Properties:
             Path: /repos/{owner}/{repo}/issues
             Method: POST
-
   getRepoIssues:
     Type: AWS::Serverless::Function
     Properties:
       Handler: getissues
       CodeUri: src/handlers/getissues
-      Runtime: go1.x
-      MemorySize: 128
-      Timeout: 100
       Description: Get the Issues for a Repo
       Policies:
         - CloudWatchLambdaInsightsExecutionRolePolicy
         - DynamoDBCrudPolicy:
             TableName: !Ref githubCloneTable
-      Environment:
-        Variables:
-          GITHUB_TABLE_NAME: !Ref githubCloneTable
       Events:
         ApiEvent:
           Type: Api
           Properties:
             Path: /repos/{owner}/{repo}/issues
             Method: GET
-
   getRepoIssue:
     Type: AWS::Serverless::Function
     Properties:
       Handler: getissue
       CodeUri: src/handlers/getissue
-      Runtime: go1.x
-      MemorySize: 128
-      Timeout: 100
       Description: Get the Issues for a Repo
       Policies:
         - CloudWatchLambdaInsightsExecutionRolePolicy
         - DynamoDBCrudPolicy:
             TableName: !Ref githubCloneTable
-      Environment:
-        Variables:
-          GITHUB_TABLE_NAME: !Ref githubCloneTable
       Events:
         ApiEvent:
           Type: Api
           Properties:
             Path: /repos/{owner}/{repo}/issues/{issueNumber}
+            Method: GET
+
+  createPullRequest:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: createpull
+      CodeUri: src/handlers/createpull
+      Description: Creates a PR in a repo
+      Policies:
+        - CloudWatchLambdaInsightsExecutionRolePolicy
+        - DynamoDBCrudPolicy:
+            TableName: !Ref githubCloneTable
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /repos/{owner}/{repo}/pull
+            Method: POST
+  getPullRequest:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: getpull
+      CodeUri: src/handlers/getpull
+      Description: Gets a PR in a repo
+      Policies:
+        - CloudWatchLambdaInsightsExecutionRolePolicy
+        - DynamoDBCrudPolicy:
+            TableName: !Ref githubCloneTable
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /repos/{owner}/{repo}/pull/{prNumber}
+            Method: GET
+  getRepoPullRequests:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: getpulls
+      CodeUri: src/handlers/getpulls
+      Description: Get PRs in a repo
+      Policies:
+        - CloudWatchLambdaInsightsExecutionRolePolicy
+        - DynamoDBCrudPolicy:
+            TableName: !Ref githubCloneTable
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /repos/{owner}/{repo}/pull
             Method: GET
 
   #            Table Definition

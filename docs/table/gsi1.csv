@@ -1,3 +1,2 @@
 Entity,GSI1PK,GSI1SK,Note
 Repos,REPO#<RepoName>,REPO#<RepoName>,
-PullRequest,REPO#<RepoName>,PR#<ZeroPaddedPullRequestNumber>,

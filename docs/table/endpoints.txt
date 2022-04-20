@@ -5,4 +5,9 @@ Repos
 Issues
     Create Issue: POST repos/{owner}/{repo}/issues
     Get Issue: GET repos/{owner}/{repo}/issues/{issueNumber}
-    Repo Issues: GET repo/{owner}/{repo}/issues
+    Get Repo Issues: GET repo/{owner}/{repo}/issues
+
+Pull Requests
+    Create Pull Request: POST repos/{owner}/{repo}/pull
+    Get Pull Request: GET repos/{owner}/{repo}/pull/{prNumber}
+    Get Repo Pull Requests: GET repo/{owner}/{repo}/pull
