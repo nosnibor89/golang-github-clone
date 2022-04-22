@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	repo = model.Repo{}
-	db   = database.Repository{}
+	pullRequest = model.PullRequest{}
+	db          = database.PullRequest{}
 )
 
 func handleRequest(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -21,20 +21,29 @@ func handleRequest(_ context.Context, request events.APIGatewayProxyRequest) (ev
 
 	user := model.GetUserFromRequest(request)
 
-	if err := repo.FromJSON(request.Body); err != nil {
+	if err := pullRequest.FromJSON(request.Body); err != nil {
 		httpError := errors.HttpErrorFromException(err)
 		return events.APIGatewayProxyResponse{Body: httpError.Message, StatusCode: httpError.Code}, nil
 	}
 
-	repo.Owner = user
-	newRepo, err := db.Create(repo)
+	pullRequest.Repo = model.Repo{
+		Name: request.PathParameters["repo"],
+		Owner: model.User{
+			Username: request.PathParameters["owner"],
+			Name:     request.PathParameters["owner"],
+		},
+	}
+
+	pullRequest.WithCreator(user)
+
+	newPullRequest, err := db.Create(pullRequest)
 
 	if err != nil {
 		httpError := errors.HttpErrorFromException(err)
 		return events.APIGatewayProxyResponse{Body: httpError.Message, StatusCode: httpError.Code}, nil
 	}
 
-	body, decodingError := newRepo.ToJSON()
+	body, decodingError := newPullRequest.ToJSON()
 
 	if decodingError != nil {
 		httpError := errors.HttpErrorFromException(decodingError)

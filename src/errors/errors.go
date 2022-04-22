@@ -3,6 +3,7 @@ package errors
 import (
 	"errors"
 	"github-clone/src/model"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -18,6 +19,7 @@ func (m HttpError) Error() string {
 }
 
 func HttpErrorFromException(e error) HttpError {
+	log.Printf("ERROR: %v", e)
 	if strings.Contains(e.Error(), "ConditionalCheckFailedException:") {
 		return HttpError{
 			Code:    http.StatusConflict,
@@ -29,6 +31,13 @@ func HttpErrorFromException(e error) HttpError {
 		return HttpError{
 			Code:    http.StatusBadRequest,
 			Message: "could parse content in request correctly",
+		}
+	}
+
+	if strings.Contains(e.Error(), "ValidationException:") {
+		return HttpError{
+			Code:    http.StatusBadRequest,
+			Message: "incorrect request",
 		}
 	}
 

@@ -18,26 +18,37 @@ type Model struct {
 	UpdatedAt time.Time `json:"updatedAt,omitempty"`
 }
 
+type RepoElement struct {
+	Creator User   `json:"creator"`
+	Title   string `json:"title"`
+	Content string `json:"content"`
+	Open    bool   `json:"open"`
+	Repo    Repo   `json:"-"`
+}
+
 type Issue struct {
 	Model
-	IssueNumber int    `json:"issueNumber"`
-	Creator     User   `json:"creator"`
-	Title       string `json:"title"`
-	Content     string `json:"content"`
-	Open        bool   `json:"open"`
-	Repo        Repo   `json:"-"`
+	RepoElement
+	IssueNumber int `json:"issueNumber"`
+
+	//TODO: Delete if everything is working
+	//Creator     User   `json:"creator"`
+	//Title       string `json:"title"`
+	//Content     string `json:"content"`
+	//Open        bool   `json:"open"`
+	//Repo        Repo   `json:"-"`
 }
 
-func (issue *Issue) WithCreator(user User) {
-	issue.Creator = user
+func (re *RepoElement) WithCreator(user User) {
+	re.Creator = user
 }
 
-func (issue *Issue) FromJSON(json string) error {
-	return parseToModel(json, issue)
+func (i *Issue) FromJSON(json string) error {
+	return parseToModel(json, i)
 }
 
-func (issue Issue) ToJSON() (string, error) {
-	return parseToJson(issue)
+func (i Issue) ToJSON() (string, error) {
+	return parseToJson(i)
 }
 
 type Repo struct {
@@ -47,12 +58,33 @@ type Repo struct {
 	Owner       User   `json:"owner"`
 }
 
-func (model *Repo) FromJSON(json string) error {
-	return parseToModel(json, model)
+func (r *Repo) FromJSON(json string) error {
+	return parseToModel(json, r)
 }
 
-func (model Repo) ToJSON() (string, error) {
-	return parseToJson(model)
+func (r Repo) ToJSON() (string, error) {
+	return parseToJson(r)
+}
+
+type PullRequest struct {
+	Model
+	RepoElement
+	PullRequestNumber int `json:"pullRequestNumber"`
+
+	//TODO: Delete if everything is working
+	//Creator     User   `json:"creator"`
+	//Title       string `json:"title"`
+	//Content     string `json:"content"`
+	//Open        bool   `json:"open"`
+	//Repo        Repo   `json:"-"`
+}
+
+func (pr *PullRequest) FromJSON(json string) error {
+	return parseToModel(json, pr)
+}
+
+func (pr PullRequest) ToJSON() (string, error) {
+	return parseToJson(pr)
 }
 
 type User struct {

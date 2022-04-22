@@ -6,6 +6,7 @@ import (
 	"github-clone/src/model"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"strconv"
 )
 
 var (
@@ -75,4 +76,59 @@ func (repo Repository) Delete(name, owner string) error {
 	}
 
 	return nil
+}
+
+func getNextNumberFromRepo(repo, owner string) (int, error) {
+	var issueNumber int
+	updatedAttrs, err := updateRepo(repo, owner)
+	if err != nil {
+		return issueNumber, err
+	}
+
+	issueNumberAttr := updatedAttrs["IssuePRNumber"]
+	if issueNumberAttr == nil {
+		return issueNumber, fmt.Errorf("%s(issue number is not set in repository)", noIssueNumber)
+	}
+
+	issueNumber, err = strconv.Atoi(aws.StringValue(issueNumberAttr.N))
+
+	if err != nil {
+		return 0, fmt.Errorf("%v(issue number could not be parsed)::::%v", noIssueNumber, err)
+	}
+
+	return issueNumber, nil
+}
+
+func updateRepo(repo, owner string) (map[string]*dynamodb.AttributeValue, error) {
+	repoEntity := entities.GithubRepo{
+		Name:  repo,
+		Owner: owner,
+	}
+
+	expressionAttrs := map[string]*string{
+		"#issuePRNumber": aws.String("IssuePRNumber"),
+	}
+
+	expressionAttrsValues := map[string]*dynamodb.AttributeValue{
+		":incr": {
+			N: aws.String("1"),
+		},
+	}
+
+	input := &dynamodb.UpdateItemInput{
+		TableName:                 tableName(),
+		Key:                       repoEntity.Key(),
+		UpdateExpression:          aws.String("SET #issuePRNumber = #issuePRNumber + :incr"),
+		ExpressionAttributeNames:  expressionAttrs,
+		ExpressionAttributeValues: expressionAttrsValues,
+		ReturnValues:              aws.String(dynamodb.ReturnValueAllNew),
+	}
+
+	updated, err := dynamoDbClient.UpdateItem(input)
+
+	if err != nil {
+		return nil, fmt.Errorf("%s(failed updating repository)\n %w", noIssueNumber, err)
+	}
+
+	return updated.Attributes, nil
 }

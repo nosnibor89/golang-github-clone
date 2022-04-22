@@ -22,7 +22,7 @@ type IssueFindOneInput struct {
 const noIssueNumber = "could not assign issue number"
 
 func (i Issue) Create(newIssue model.Issue) (*model.Issue, error) {
-	issueNumber, err := i.getIssueNumberFromRepo(newIssue.Repo.Name, newIssue.Repo.Owner.Username)
+	issueNumber, err := getNextNumberFromRepo(newIssue.Repo.Name, newIssue.Repo.Owner.Username)
 	if err != nil {
 		return nil, err
 	}
@@ -144,59 +144,4 @@ func (i Issue) createIssue(newIssue model.Issue) (*model.Issue, error) {
 	created := issueEntity.ToModel()
 
 	return &created, err
-}
-
-func (i Issue) updateRepo(repo, owner string) (map[string]*dynamodb.AttributeValue, error) {
-	repoEntity := entities.GithubRepo{
-		Name:  repo,
-		Owner: owner,
-	}
-
-	expressionAttrs := map[string]*string{
-		"#issuePRNumber": aws.String("IssuePRNumber"),
-	}
-
-	expressionAttrsValues := map[string]*dynamodb.AttributeValue{
-		":incr": {
-			N: aws.String("1"),
-		},
-	}
-
-	input := &dynamodb.UpdateItemInput{
-		TableName:                 tableName(),
-		Key:                       repoEntity.Key(),
-		UpdateExpression:          aws.String("SET #issuePRNumber = #issuePRNumber + :incr"),
-		ExpressionAttributeNames:  expressionAttrs,
-		ExpressionAttributeValues: expressionAttrsValues,
-		ReturnValues:              aws.String(dynamodb.ReturnValueAllNew),
-	}
-
-	updated, err := dynamoDbClient.UpdateItem(input)
-
-	if err != nil {
-		return nil, fmt.Errorf("%s(failed updating repository)", noIssueNumber)
-	}
-
-	return updated.Attributes, nil
-}
-
-func (i Issue) getIssueNumberFromRepo(repo, owner string) (int, error) {
-	var issueNumber int
-	updatedAttrs, err := i.updateRepo(repo, owner)
-	if err != nil {
-		return issueNumber, err
-	}
-
-	issueNumberAttr := updatedAttrs["IssuePRNumber"]
-	if issueNumberAttr == nil {
-		return issueNumber, fmt.Errorf("%s(issue number is not set in repository)", noIssueNumber)
-	}
-
-	issueNumber, err = strconv.Atoi(aws.StringValue(issueNumberAttr.N))
-
-	if err != nil {
-		return 0, fmt.Errorf("%v(issue number could not be parsed)::::%v", noIssueNumber, err)
-	}
-
-	return issueNumber, nil
 }

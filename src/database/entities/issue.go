@@ -75,15 +75,17 @@ func (i Issue) ToModelFromAttrs(attrs Attrs) model.Issue {
 		issueNumber, _ := strconv.Atoi(aws.StringValue(attrs["IssueNumber"].N))
 
 		repoModel = model.Issue{
+			IssueNumber: issueNumber,
 			Model: model.Model{
 				UpdatedAt: parseTimeAttr(aws.StringValue(attrs["UpdatedAt"].S)),
 				CreatedAt: parseTimeAttr(aws.StringValue(attrs["CreatedAt"].S)),
 			},
-			Title:       aws.StringValue(attrs["Title"].S),
-			Content:     aws.StringValue(attrs["Content"].S),
-			IssueNumber: issueNumber,
-			Open:        aws.BoolValue(attrs["Open"].BOOL),
-			Creator:     creator,
+			RepoElement: model.RepoElement{
+				Title:   aws.StringValue(attrs["Title"].S),
+				Content: aws.StringValue(attrs["Content"].S),
+				Open:    aws.BoolValue(attrs["Open"].BOOL),
+				Creator: creator,
+			},
 		}
 
 	}
@@ -96,11 +98,13 @@ func (i Issue) ToModel() model.Issue {
 			UpdatedAt: i.UpdatedAt,
 			CreatedAt: i.CreatedAt,
 		},
-		Title:       i.Title,
-		Content:     i.Content,
 		IssueNumber: i.IssueNumber,
-		Open:        i.Open,
-		Creator:     model.User{Username: i.Creator, Name: i.Creator},
+		RepoElement: model.RepoElement{
+			Title:   i.Title,
+			Content: i.Content,
+			Open:    i.Open,
+			Creator: model.User{Username: i.Creator, Name: i.Creator},
+		},
 	}
 	return repoModel
 }
