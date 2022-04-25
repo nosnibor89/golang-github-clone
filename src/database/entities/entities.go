@@ -67,8 +67,8 @@ func (attrDefinition *attrDefinition) withIntAttribute(name string, value string
 }
 
 func (attrDefinition *attrDefinition) withSecondaryIndexKey(index int, partitionKeyValue, sortKeyValue string) *attrDefinition {
-	secondaryPartitionKey := fmt.Sprintf("GS%dPK", index)
-	secondarySortKey := fmt.Sprintf("GS%dSK", index)
+	secondaryPartitionKey := fmt.Sprintf("GSI%dPK", index)
+	secondarySortKey := fmt.Sprintf("GSI%dSK", index)
 
 	secondaryIndexKey := map[string]*dynamodb.AttributeValue{
 		secondaryPartitionKey: {S: aws.String(partitionKeyValue)},

@@ -1,7 +1,7 @@
 Entity,PK,SK,GSI1PK,GSI1SK,GSI2PK,GSI2SK,Note
 Repos,REPO#<OwnerName>#<RepoName>,REPO#<OwnerName>#<RepoName>,REPO#<RepoName>,REPO#<RepoName>,,,
 Issues,REPO#<OwnerName>#<RepoName>,ISSUE#<ZeroPaddedIssueNumber>,,,,,
-Pull Request,REPO#<OwnerName>#<RepoName>,#PR#<ZeroPaddedPullRequestNumber>,"","",,,
+Pull Request,PR#<OwnerName>#<RepoName>#<PullRequestNumber>,PR#<OwnerName>#<RepoName>#<ZeroPaddedPullRequestNumber>,REPO#<RepoName>,PR#<ZeroPaddedPullRequestNumber>,,,
 Comments,,,,,,,
 Forks,,,,,,,
 Users,,,,,,,

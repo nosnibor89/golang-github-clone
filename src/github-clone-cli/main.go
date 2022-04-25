@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	commands2 "github-clone/src/github-clone-cli/commands"
+	"github-clone/src/github-clone-cli/commands/migration"
 	repoCommands "github-clone/src/github-clone-cli/commands/repos"
 	cliUtil "github-clone/src/github-clone-cli/config"
 	"github-clone/src/util"
@@ -35,6 +36,7 @@ func parse(args []string) error {
 	commands := []commands2.Runner{
 		repoCommands.NewDeleteRepoCommand(),
 		repoCommands.NewFindOneRepoCommand(),
+		migration.NewExecuteMigrationCommand(),
 	}
 
 	subcommand := os.Args[1]

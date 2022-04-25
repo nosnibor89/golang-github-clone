@@ -2,6 +2,7 @@
 start-api: build start-local-api
 
 invoke-function: build invoke
+deploy: build sam-deploy
 
 install-cli:
 	cd ./src/github-clone-cli && go install
@@ -17,3 +18,6 @@ invoke:
 
 start-local-api:
 	sam local start-api --env-vars env.local.json -p 3003
+
+sam-deploy:
+	sam deploy --stack-name big-deals --capabilities CAPABILITY_IAM --resolve-s3 #--force-upload

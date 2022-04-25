@@ -20,7 +20,6 @@ func (pr PullRequest) Create(newPullRequest model.PullRequest) (*model.PullReque
 	return pr.createPullRequest(newPullRequest)
 }
 
-//TODO: ADD PULLREQUEST TO INDEX
 func (pr PullRequest) createPullRequest(newPullRequest model.PullRequest) (*model.PullRequest, error) {
 	prEntity := entities.NewPullRequest(
 		newPullRequest.Title,

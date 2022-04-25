@@ -161,10 +161,10 @@ Resources:
           AttributeType: "S"
         - AttributeName: "GSI1SK"
           AttributeType: "S"
-        - AttributeName: "GSI2PK"
-          AttributeType: "S"
-        - AttributeName: "GSI2SK"
-          AttributeType: "S"
+#        - AttributeName: "GSI2PK"
+#          AttributeType: "S"
+#        - AttributeName: "GSI2SK"
+#          AttributeType: "S"
       KeySchema:
         - AttributeName: "PK"
           KeyType: "HASH"
@@ -173,6 +173,19 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: 2
         WriteCapacityUnits: 2
+      GlobalSecondaryIndexes:
+        - IndexName: GS1
+          KeySchema:
+            - AttributeName: "GSI1PK"
+              KeyType: "HASH"
+            - AttributeName: "GSI1SK"
+              KeyType: "RANGE"
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 2
+            WriteCapacityUnits: 2
+
 
 Outputs:
   WebEndpoint:

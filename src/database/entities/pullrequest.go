@@ -37,6 +37,9 @@ func NewPullRequest(title, content, repoName, repoOwner, creator string, pullReq
 func (pr PullRequest) ToItem() (Attrs, error) {
 	//TODO: ADD VALIDATION
 
+	gs1pk := fmt.Sprintf("REPO#%s#%s", strings.ToLower(pr.RepoOwner), strings.ToLower(pr.RepoName))
+	gs1sk := fmt.Sprintf("PR#%s", pad(pr.PullRequestNumber))
+
 	ad := pr.initialAttributeDefinition()
 	ad.withStringAttribute("Title", pr.Title).
 		withStringAttribute("Content", pr.Content).
@@ -46,7 +49,8 @@ func (pr PullRequest) ToItem() (Attrs, error) {
 		withBoolAttribute("Open", pr.Open).
 		withStringAttribute("CreatedAt", parseTimeItem(pr.CreatedAt)).
 		withStringAttribute("UpdatedAt", parseTimeItem(pr.UpdatedAt)).
-		withIntAttribute("PullRequestNumber", strconv.Itoa(pr.PullRequestNumber))
+		withIntAttribute("PullRequestNumber", strconv.Itoa(pr.PullRequestNumber)).
+		withSecondaryIndexKey(1, gs1pk, gs1sk)
 
 	itemAttrs := ad.allAttributes()
 
@@ -54,15 +58,15 @@ func (pr PullRequest) ToItem() (Attrs, error) {
 }
 
 func (pr PullRequest) PartitionKey() string {
-	return fmt.Sprintf("REPO#%s#%s", strings.ToLower(pr.RepoOwner), strings.ToLower(pr.RepoName))
+	return fmt.Sprintf("PR#%s#%s#%s", strings.ToLower(pr.RepoOwner), strings.ToLower(pr.RepoName), strconv.Itoa(pr.PullRequestNumber))
 }
 
 func (pr PullRequest) initialAttributeDefinition() attrDefinition {
-	sk := fmt.Sprintf("#PR#%s", pad(pr.PullRequestNumber))
+	sk := fmt.Sprintf("PR#%s#%s#%s", strings.ToLower(pr.RepoOwner), strings.ToLower(pr.RepoName), pad(pr.PullRequestNumber))
 	return attrDefinition{
 		pk:        pr.PartitionKey(),
 		sk:        sk,
-		typeLabel: "PULLREQUEST",
+		typeLabel: "PULL_REQUEST",
 	}
 }
 

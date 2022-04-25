@@ -33,7 +33,7 @@ func (repo GithubRepo) Key() Attrs {
 // ToItem Exports entity to Item type
 func (repo GithubRepo) ToItem() (Attrs, error) {
 	//TODO: ADD VALIDATION
-	gs1 := fmt.Sprintf("REPO#%s", repo.Name)
+	gs1 := fmt.Sprintf("REPO#%s#%s", strings.ToLower(repo.Owner), strings.ToLower(repo.Name))
 	ad := repo.initialAttributeDefinition(repo.Owner, repo.Name)
 	ad.withStringAttribute("Name", repo.Name).
 		withStringAttribute("Owner", repo.Owner).
