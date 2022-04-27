@@ -174,7 +174,7 @@ Resources:
         ReadCapacityUnits: 2
         WriteCapacityUnits: 2
       GlobalSecondaryIndexes:
-        - IndexName: GS1
+        - IndexName: GSI1
           KeySchema:
             - AttributeName: "GSI1PK"
               KeyType: "HASH"

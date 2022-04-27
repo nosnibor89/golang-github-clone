@@ -10,13 +10,16 @@ import (
 )
 
 //TODO: Maybe avoid duplication ??
-
 type PullRequest struct {
 	Entity
 	Open                                         bool
 	RepoName, RepoOwner, Content, Title, Creator string
 	PullRequestNumber                            int
 }
+
+const (
+	PullRequestOpenStatus = "OPEN"
+)
 
 func NewPullRequest(title, content, repoName, repoOwner, creator string, pullRequestNumber int) PullRequest {
 	return PullRequest{
@@ -37,9 +40,7 @@ func NewPullRequest(title, content, repoName, repoOwner, creator string, pullReq
 // ToItem Exports entity to Item type
 func (pr PullRequest) ToItem() (Attrs, error) {
 	//TODO: ADD VALIDATION
-
-	gs1pk := fmt.Sprintf("REPO#%s#%s", strings.ToLower(pr.RepoOwner), strings.ToLower(pr.RepoName))
-	gs1sk := fmt.Sprintf("PR#%s", pad(pr.PullRequestNumber))
+	gs1pk, gs1sk := pr.GSI1()
 
 	ad := pr.initialAttributeDefinition()
 	ad.withStringAttribute("Title", pr.Title).
@@ -56,6 +57,13 @@ func (pr PullRequest) ToItem() (Attrs, error) {
 	itemAttrs := ad.allAttributes()
 
 	return itemAttrs, nil
+}
+
+func (pr PullRequest) GSI1() (string, string) {
+	gs1pk := fmt.Sprintf("REPO#%s#%s", strings.ToLower(pr.RepoOwner), strings.ToLower(pr.RepoName))
+	gs1sk := fmt.Sprintf("PR#%s", pad(pr.PullRequestNumber))
+
+	return gs1pk, gs1sk
 }
 
 func (pr PullRequest) PartitionKey() string {

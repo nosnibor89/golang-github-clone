@@ -78,7 +78,7 @@ func (i Issue) GetIssues(repo, owner, status string) (*model.Repo, []model.Issue
 		log.Printf("[Trace]Count: %d", *queryOutput.Count)
 	}
 
-	issues = entity.ToIssueList(issueItems)
+	issues = entities.ToList[model.Issue](issueItems, entity)
 
 	repoEntity := entities.GithubRepo{}
 

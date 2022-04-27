@@ -2,46 +2,40 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"github-clone/src/database"
 	"github-clone/src/errors"
-	"github-clone/src/model"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"net/http"
 )
 
-var (
-	repo = model.Repo{}
-	db   = database.Repository{}
-)
+var db = database.PullRequest{}
 
 func handleRequest(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	var body string
-	statusCode := http.StatusCreated
+	repo := request.PathParameters["repo"]
+	owner := request.PathParameters["owner"]
+	status := request.QueryStringParameters["status"]
 
-	user := model.GetUserFromRequest(request)
-
-	if err := repo.FromJSON(request.Body); err != nil {
-		httpError := errors.HttpErrorFromException(err)
-		return events.APIGatewayProxyResponse{Body: httpError.Message, StatusCode: httpError.Code}, nil
-	}
-
-	repo.Owner = user
-	newRepo, err := db.Create(repo)
+	foundRepo, issues, err := db.GetAll(repo, owner, status)
 
 	if err != nil {
 		httpError := errors.HttpErrorFromException(err)
-		return events.APIGatewayProxyResponse{Body: httpError.Message, StatusCode: httpError.Code}, nil
+		return events.APIGatewayProxyResponse{
+			StatusCode: httpError.Code,
+			Body:       httpError.Message,
+		}, nil
 	}
 
-	body, decodingError := newRepo.ToJSON()
+	body, _ := json.Marshal(map[string]interface{}{
+		"repo":         foundRepo,
+		"pullRequests": issues,
+	})
 
-	if decodingError != nil {
-		httpError := errors.HttpErrorFromException(decodingError)
-		return events.APIGatewayProxyResponse{Body: httpError.Message, StatusCode: httpError.Code}, nil
-	}
-
-	return events.APIGatewayProxyResponse{Body: body, StatusCode: statusCode}, nil
+	return events.APIGatewayProxyResponse{
+		StatusCode: http.StatusOK,
+		Body:       string(body),
+	}, nil
 }
 
 func main() {

@@ -121,13 +121,3 @@ func (i Issue) initialAttributeDefinition() attrDefinition {
 		typeLabel: "ISSUE",
 	}
 }
-
-func (i Issue) ToIssueList(items []Attrs) []model.Issue {
-	issues := []model.Issue{}
-
-	for _, item := range items {
-		issues = append(issues, i.ToModelFromAttrs(item))
-	}
-
-	return issues
-}

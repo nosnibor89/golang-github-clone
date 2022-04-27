@@ -10,14 +10,14 @@ import (
 	"net/http"
 )
 
-var issue = database.Issue{}
+var db = database.Issue{}
 
 func handleRequest(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	repo := request.PathParameters["repo"]
 	owner := request.PathParameters["owner"]
 	status := request.QueryStringParameters["status"]
 
-	foundRepo, issues, err := issue.GetIssues(repo, owner, status)
+	foundRepo, issues, err := db.GetIssues(repo, owner, status)
 
 	if err != nil {
 		httpError := errors.HttpErrorFromException(err)

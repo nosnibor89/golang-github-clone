@@ -2,6 +2,7 @@ package entities
 
 import (
 	"fmt"
+	"github-clone/src/model"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"time"
@@ -84,6 +85,23 @@ func (attrDefinition *attrDefinition) allAttributes() Attrs {
 
 	allAttrs := mergeAttrs(primaryKeyAttrs, typeAttr, attrDefinition.extraAttrs)
 	return allAttrs
+}
+
+type Enumerable interface {
+	model.Issue | model.PullRequest
+}
+type ModelTransformer[T Enumerable] interface {
+	ToModelFromAttrs(attrs Attrs) T
+}
+
+func ToList[M Enumerable](items []Attrs, transformer ModelTransformer[M]) []M {
+	list := make([]M, 0, len(items))
+
+	for _, item := range items {
+		list = append(list, transformer.ToModelFromAttrs(item))
+	}
+
+	return list
 }
 
 func parseTimeAttr(datetime string) time.Time {
