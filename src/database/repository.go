@@ -15,7 +15,7 @@ var (
 
 type Repository struct{}
 
-func (repo Repository) FindOne(name, owner string) *model.Repo {
+func (r Repository) FindOne(name, owner string) *model.Repo {
 	item := entities.GithubRepo{
 		Name:  name,
 		Owner: owner,
@@ -37,7 +37,7 @@ func (repo Repository) FindOne(name, owner string) *model.Repo {
 	return &repoValue
 }
 
-func (repo Repository) Create(newRepo model.Repo) (*model.Repo, error) {
+func (r Repository) Create(newRepo model.Repo) (*model.Repo, error) {
 	repoEntity := entities.NewGithubRepo(newRepo.Name, newRepo.Owner.Username, newRepo.Description)
 
 	item, err := repoEntity.ToItem()
@@ -62,7 +62,7 @@ func (repo Repository) Create(newRepo model.Repo) (*model.Repo, error) {
 	return &created, nil
 }
 
-func (repo Repository) Delete(name, owner string) error {
+func (r Repository) Delete(name, owner string) error {
 	repoEntity := entities.NewGithubRepo(name, owner, "")
 
 	params := &dynamodb.DeleteItemInput{

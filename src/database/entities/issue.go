@@ -68,13 +68,13 @@ func (i Issue) ToItem() (Attrs, error) {
 }
 
 func (i Issue) ToModelFromAttrs(attrs Attrs) model.Issue {
-	var repoModel model.Issue
+	var issue model.Issue
 	if attrs["Title"] != nil && attrs["Creator"] != nil {
 		creator := model.User{Username: aws.StringValue(attrs["Creator"].S), Name: aws.StringValue(attrs["Creator"].S)}
 
 		issueNumber, _ := strconv.Atoi(aws.StringValue(attrs["IssueNumber"].N))
 
-		repoModel = model.Issue{
+		issue = model.Issue{
 			IssueNumber: issueNumber,
 			Model: model.Model{
 				UpdatedAt: parseTimeAttr(aws.StringValue(attrs["UpdatedAt"].S)),
@@ -89,7 +89,7 @@ func (i Issue) ToModelFromAttrs(attrs Attrs) model.Issue {
 		}
 
 	}
-	return repoModel
+	return issue
 }
 
 func (i Issue) ToModel() model.Issue {

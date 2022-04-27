@@ -3,6 +3,7 @@ package entities
 import (
 	"fmt"
 	"github-clone/src/model"
+	"github.com/aws/aws-sdk-go/aws"
 	"strconv"
 	"strings"
 	"time"
@@ -61,6 +62,12 @@ func (pr PullRequest) PartitionKey() string {
 	return fmt.Sprintf("PR#%s#%s#%s", strings.ToLower(pr.RepoOwner), strings.ToLower(pr.RepoName), strconv.Itoa(pr.PullRequestNumber))
 }
 
+func (pr PullRequest) Key() Attrs {
+	ad := pr.initialAttributeDefinition()
+
+	return ad.getPrimaryKey()
+}
+
 func (pr PullRequest) initialAttributeDefinition() attrDefinition {
 	sk := fmt.Sprintf("PR#%s#%s#%s", strings.ToLower(pr.RepoOwner), strings.ToLower(pr.RepoName), pad(pr.PullRequestNumber))
 	return attrDefinition{
@@ -68,6 +75,31 @@ func (pr PullRequest) initialAttributeDefinition() attrDefinition {
 		sk:        sk,
 		typeLabel: "PULL_REQUEST",
 	}
+}
+
+func (pr PullRequest) ToModelFromAttrs(attrs Attrs) model.PullRequest {
+	var pullRequest model.PullRequest
+	if attrs["Title"] != nil && attrs["Creator"] != nil {
+		creator := model.User{Username: aws.StringValue(attrs["Creator"].S), Name: aws.StringValue(attrs["Creator"].S)}
+
+		prNumber, _ := strconv.Atoi(aws.StringValue(attrs["PullRequestNumber"].N))
+
+		pullRequest = model.PullRequest{
+			PullRequestNumber: prNumber,
+			Model: model.Model{
+				UpdatedAt: parseTimeAttr(aws.StringValue(attrs["UpdatedAt"].S)),
+				CreatedAt: parseTimeAttr(aws.StringValue(attrs["CreatedAt"].S)),
+			},
+			RepoElement: model.RepoElement{
+				Title:   aws.StringValue(attrs["Title"].S),
+				Content: aws.StringValue(attrs["Content"].S),
+				Open:    aws.BoolValue(attrs["Open"].BOOL),
+				Creator: creator,
+			},
+		}
+
+	}
+	return pullRequest
 }
 
 func (pr PullRequest) ToModel() model.PullRequest {

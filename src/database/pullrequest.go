@@ -6,9 +6,16 @@ import (
 	"github-clone/src/model"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"strconv"
 )
 
 type PullRequest struct{}
+
+type PullRequestFindOneInput struct {
+	Repo              string
+	Owner             string
+	PullRequestNumber string
+}
 
 func (pr PullRequest) Create(newPullRequest model.PullRequest) (*model.PullRequest, error) {
 	pullRequestNumber, err := getNextNumberFromRepo(newPullRequest.Repo.Name, newPullRequest.Repo.Owner.Username)
@@ -50,4 +57,32 @@ func (pr PullRequest) createPullRequest(newPullRequest model.PullRequest) (*mode
 	created := prEntity.ToModel()
 
 	return &created, nil
+}
+
+func (pr PullRequest) FindOne(input PullRequestFindOneInput) (*model.PullRequest, error) {
+	prNumber, err := strconv.Atoi(input.PullRequestNumber)
+	if err != nil {
+		return nil, fmt.Errorf("could find pull request %w", err)
+	}
+
+	item := entities.PullRequest{
+		RepoOwner:         input.Owner,
+		RepoName:          input.Repo,
+		PullRequestNumber: prNumber,
+	}
+
+	getInput := &dynamodb.GetItemInput{
+		TableName: tableName(),
+		Key:       item.Key(),
+	}
+
+	itemOutput, err := dynamoDbClient.GetItem(getInput)
+
+	if err != nil || itemOutput.Item == nil {
+		return nil, fmt.Errorf("could not find pull request. error %v, item:: %v\n", err, itemOutput.Item)
+	}
+
+	prValue := item.ToModelFromAttrs(itemOutput.Item)
+
+	return &prValue, nil
 }

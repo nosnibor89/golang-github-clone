@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github-clone/src/database"
 	"github-clone/src/errors"
 	"github-clone/src/model"
@@ -11,30 +12,33 @@ import (
 )
 
 var (
-	repo = model.Repo{}
-	db   = database.Repository{}
+	pullRequest = model.PullRequest{}
+	db          = database.PullRequest{}
 )
 
 func handleRequest(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	var body string
-	statusCode := http.StatusCreated
+	statusCode := http.StatusOK
 
-	user := model.GetUserFromRequest(request)
+	repo := request.PathParameters["repo"]
+	prNumber := request.PathParameters["prNumber"]
 
-	if err := repo.FromJSON(request.Body); err != nil {
-		httpError := errors.HttpErrorFromException(err)
-		return events.APIGatewayProxyResponse{Body: httpError.Message, StatusCode: httpError.Code}, nil
+	findOneInput := database.PullRequestFindOneInput{
+		Repo:              repo,
+		Owner:             request.PathParameters["owner"],
+		PullRequestNumber: prNumber,
 	}
 
-	repo.Owner = user
-	newRepo, err := db.Create(repo)
+	found, err := db.FindOne(findOneInput)
 
 	if err != nil {
-		httpError := errors.HttpErrorFromException(err)
-		return events.APIGatewayProxyResponse{Body: httpError.Message, StatusCode: httpError.Code}, nil
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusNotFound,
+			Body:       fmt.Sprintf("Could not find pull request %s from repo %s", prNumber, repo),
+		}, nil
 	}
 
-	body, decodingError := newRepo.ToJSON()
+	body, decodingError := found.ToJSON()
 
 	if decodingError != nil {
 		httpError := errors.HttpErrorFromException(decodingError)

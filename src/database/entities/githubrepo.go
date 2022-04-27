@@ -25,22 +25,22 @@ func NewGithubRepo(name, owner, description string) GithubRepo {
 	}
 }
 
-func (repo GithubRepo) Key() Attrs {
-	ad := repo.initialAttributeDefinition(repo.Owner, repo.Name)
+func (r GithubRepo) Key() Attrs {
+	ad := r.initialAttributeDefinition(r.Owner, r.Name)
 	return ad.getPrimaryKey()
 }
 
 // ToItem Exports entity to Item type
-func (repo GithubRepo) ToItem() (Attrs, error) {
+func (r GithubRepo) ToItem() (Attrs, error) {
 	//TODO: ADD VALIDATION
-	gs1 := fmt.Sprintf("REPO#%s#%s", strings.ToLower(repo.Owner), strings.ToLower(repo.Name))
-	ad := repo.initialAttributeDefinition(repo.Owner, repo.Name)
-	ad.withStringAttribute("Name", repo.Name).
-		withStringAttribute("Owner", repo.Owner).
-		withStringAttribute("Description", repo.Description).
+	gs1 := fmt.Sprintf("REPO#%s#%s", strings.ToLower(r.Owner), strings.ToLower(r.Name))
+	ad := r.initialAttributeDefinition(r.Owner, r.Name)
+	ad.withStringAttribute("Name", r.Name).
+		withStringAttribute("Owner", r.Owner).
+		withStringAttribute("Description", r.Description).
 		withIntAttribute("IssuePRNumber", "0").
-		withStringAttribute("CreatedAt", parseTimeItem(repo.CreatedAt)).
-		withStringAttribute("UpdatedAt", parseTimeItem(repo.UpdatedAt)).
+		withStringAttribute("CreatedAt", parseTimeItem(r.CreatedAt)).
+		withStringAttribute("UpdatedAt", parseTimeItem(r.UpdatedAt)).
 		withSecondaryIndexKey(1, gs1, gs1)
 
 	itemAttrs := ad.allAttributes()
@@ -48,11 +48,11 @@ func (repo GithubRepo) ToItem() (Attrs, error) {
 	return itemAttrs, nil
 }
 
-func (repo GithubRepo) ToModelFromAttrs(attrs Attrs) model.Repo {
-	var repoModel model.Repo
+func (r GithubRepo) ToModelFromAttrs(attrs Attrs) model.Repo {
+	var repo model.Repo
 	if attrs["Name"] != nil && attrs["Owner"] != nil {
 		owner := aws.StringValue(attrs["Owner"].S)
-		repoModel = model.Repo{
+		repo = model.Repo{
 			Model: model.Model{
 				UpdatedAt: parseTimeAttr(aws.StringValue(attrs["UpdatedAt"].S)),
 				CreatedAt: parseTimeAttr(aws.StringValue(attrs["CreatedAt"].S)),
@@ -63,23 +63,23 @@ func (repo GithubRepo) ToModelFromAttrs(attrs Attrs) model.Repo {
 		}
 
 	}
-	return repoModel
+	return repo
 }
 
-func (repo GithubRepo) ToModel() model.Repo {
-	repoModel := model.Repo{
+func (r GithubRepo) ToModel() model.Repo {
+	repo := model.Repo{
 		Model: model.Model{
-			UpdatedAt: repo.UpdatedAt,
-			CreatedAt: repo.CreatedAt,
+			UpdatedAt: r.UpdatedAt,
+			CreatedAt: r.CreatedAt,
 		},
-		Name:        repo.Name,
-		Owner:       model.User{Username: repo.Owner, Name: repo.Owner},
-		Description: repo.Description,
+		Name:        r.Name,
+		Owner:       model.User{Username: r.Owner, Name: r.Owner},
+		Description: r.Description,
 	}
-	return repoModel
+	return repo
 }
 
-func (repo GithubRepo) initialAttributeDefinition(owner, name string) attrDefinition {
+func (r GithubRepo) initialAttributeDefinition(owner, name string) attrDefinition {
 	pk := fmt.Sprintf("REPO#%s#%s", strings.ToLower(owner), strings.ToLower(name))
 	return attrDefinition{
 		pk:        pk,
