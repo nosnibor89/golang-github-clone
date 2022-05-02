@@ -1,8 +1,10 @@
-package database
+package issue
 
 import (
 	"fmt"
+	"github-clone/src/database"
 	"github-clone/src/database/entities"
+	"github-clone/src/database/repository"
 	"github-clone/src/model"
 	"github-clone/src/util"
 	"github.com/aws/aws-sdk-go/aws"
@@ -12,26 +14,21 @@ import (
 	"strings"
 )
 
-type Issue struct {
-}
-
-type IssueFindOneInput struct {
+type FindIssueInput struct {
 	Repo, Owner, IssueNumber string
 }
 
-const noIssueNumber = "could not assign issue number"
-
-func (i Issue) Create(newIssue model.Issue) (*model.Issue, error) {
-	issueNumber, err := getNextNumberFromRepo(newIssue.Repo.Name, newIssue.Repo.Owner.Username)
+func CreateIssue(newIssue model.Issue) (*model.Issue, error) {
+	issueNumber, err := repository.GetNextNumberFromRepo(newIssue.Repo.Name, newIssue.Repo.Owner.Username)
 	if err != nil {
 		return nil, err
 	}
 
 	newIssue.IssueNumber = issueNumber
-	return i.createIssue(newIssue)
+	return createIssue(newIssue)
 }
 
-func (i Issue) GetIssues(repo, owner, status string) (*model.Repo, []model.Issue, error) {
+func GetIssues(repo, owner, status string) (*model.Repo, []model.Issue, error) {
 	var issues []model.Issue
 	shouldLookOpenIssues := status == "" || strings.ToUpper(strings.TrimSpace(status)) == entities.IssueOpenStatus
 
@@ -41,7 +38,7 @@ func (i Issue) GetIssues(repo, owner, status string) (*model.Repo, []model.Issue
 	}
 
 	input := &dynamodb.QueryInput{
-		TableName:              tableName(),
+		TableName:              database.TableName(),
 		KeyConditionExpression: aws.String("#pk = :pk AND #sk <= :sk"),
 		ExpressionAttributeNames: map[string]*string{
 			"#pk":   aws.String("PK"),
@@ -64,7 +61,7 @@ func (i Issue) GetIssues(repo, owner, status string) (*model.Repo, []model.Issue
 		ReturnConsumedCapacity: aws.String(dynamodb.ReturnConsumedCapacityTotal),
 	}
 
-	queryOutput, err := dynamoDbClient.Query(input)
+	queryOutput, err := database.DBClient().Query(input)
 
 	if err != nil {
 		return nil, issues, fmt.Errorf("error fetching issues: %w", err)
@@ -86,7 +83,7 @@ func (i Issue) GetIssues(repo, owner, status string) (*model.Repo, []model.Issue
 	return &repoValue, issues, nil
 }
 
-func (i Issue) FindOne(input IssueFindOneInput) (*model.Issue, error) {
+func FindIssue(input FindIssueInput) (*model.Issue, error) {
 	issueNumber, err := strconv.Atoi(input.IssueNumber)
 	if err != nil {
 		return nil, fmt.Errorf("could find issue %w", err)
@@ -99,11 +96,11 @@ func (i Issue) FindOne(input IssueFindOneInput) (*model.Issue, error) {
 	}
 
 	dynamoInput := &dynamodb.GetItemInput{
-		TableName: tableName(),
+		TableName: database.TableName(),
 		Key:       item.Key(),
 	}
 
-	itemOutput, err := dynamoDbClient.GetItem(dynamoInput)
+	itemOutput, err := database.DBClient().GetItem(dynamoInput)
 
 	if err != nil || itemOutput.Item == nil {
 		return nil, fmt.Errorf("could not find issue. error %v, item:: %v\n", err, itemOutput.Item)
@@ -114,7 +111,7 @@ func (i Issue) FindOne(input IssueFindOneInput) (*model.Issue, error) {
 	return &issueValue, nil
 }
 
-func (i Issue) createIssue(newIssue model.Issue) (*model.Issue, error) {
+func createIssue(newIssue model.Issue) (*model.Issue, error) {
 	issueEntity := entities.NewIssue(
 		newIssue.Title,
 		newIssue.Content,
@@ -131,13 +128,13 @@ func (i Issue) createIssue(newIssue model.Issue) (*model.Issue, error) {
 	}
 
 	input := &dynamodb.PutItemInput{
-		TableName:           tableName(),
+		TableName:           database.TableName(),
 		Item:                item,
 		ReturnValues:        aws.String(dynamodb.ReturnValueNone),
-		ConditionExpression: generateAttrNotExistsExpression("PK", "SK"),
+		ConditionExpression: database.GenerateAttrNotExistsExpression("PK", "SK"),
 	}
 
-	if _, err = dynamoDbClient.PutItem(input); err != nil {
+	if _, err = database.DBClient().PutItem(input); err != nil {
 		return nil, err
 	}
 

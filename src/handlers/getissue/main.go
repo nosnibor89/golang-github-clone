@@ -3,15 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"github-clone/src/database"
+	"github-clone/src/database/issue"
 	"github-clone/src/errors"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"log"
 	"net/http"
 )
-
-var db = database.Issue{}
 
 /*
 	At this point any user can ask for any other user's repo which is what GitHub does, but maybe we need to handle that in a different way
@@ -21,13 +19,13 @@ func handleRequest(_ context.Context, request events.APIGatewayProxyRequest) (ev
 	owner := request.PathParameters["owner"]
 	issueNumber := request.PathParameters["issueNumber"]
 
-	findOneInput := database.IssueFindOneInput{
+	input := issue.FindIssueInput{
 		Repo:        repo,
 		Owner:       owner,
 		IssueNumber: issueNumber,
 	}
 
-	found, err := db.FindOne(findOneInput)
+	found, err := issue.FindIssue(input)
 
 	if err != nil {
 		log.Println(err)

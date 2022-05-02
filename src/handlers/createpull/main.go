@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"github-clone/src/database"
+	"github-clone/src/database/pullrequest"
 	"github-clone/src/errors"
 	"github-clone/src/model"
 	"github.com/aws/aws-lambda-go/events"
@@ -12,7 +12,6 @@ import (
 
 var (
 	pullRequest = model.PullRequest{}
-	db          = database.PullRequest{}
 )
 
 func handleRequest(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -36,7 +35,7 @@ func handleRequest(_ context.Context, request events.APIGatewayProxyRequest) (ev
 
 	pullRequest.WithCreator(user)
 
-	newPullRequest, err := db.Create(pullRequest)
+	newPullRequest, err := pullrequest.CreatePullRequest(pullRequest)
 
 	if err != nil {
 		httpError := errors.HttpErrorFromException(err)

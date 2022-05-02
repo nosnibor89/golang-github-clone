@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"github-clone/src/database"
+	"github-clone/src/database/pullrequest"
 	"github-clone/src/errors"
 	"github-clone/src/model"
 	"github.com/aws/aws-lambda-go/events"
@@ -13,7 +13,6 @@ import (
 
 var (
 	pullRequest = model.PullRequest{}
-	db          = database.PullRequest{}
 )
 
 func handleRequest(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -23,13 +22,13 @@ func handleRequest(_ context.Context, request events.APIGatewayProxyRequest) (ev
 	repo := request.PathParameters["repo"]
 	prNumber := request.PathParameters["prNumber"]
 
-	findOneInput := database.PullRequestFindOneInput{
+	input := pullrequest.FindPullRequestInput{
 		Repo:              repo,
 		Owner:             request.PathParameters["owner"],
 		PullRequestNumber: prNumber,
 	}
 
-	found, err := db.FindOne(findOneInput)
+	found, err := pullrequest.FindPullRequest(input)
 
 	if err != nil {
 		return events.APIGatewayProxyResponse{

@@ -1,8 +1,10 @@
-package database
+package pullrequest
 
 import (
 	"fmt"
+	"github-clone/src/database"
 	"github-clone/src/database/entities"
+	"github-clone/src/database/repository"
 	"github-clone/src/model"
 	"github-clone/src/util"
 	"github.com/aws/aws-sdk-go/aws"
@@ -12,25 +14,23 @@ import (
 	"strings"
 )
 
-type PullRequest struct{}
-
-type PullRequestFindOneInput struct {
+type FindPullRequestInput struct {
 	Repo              string
 	Owner             string
 	PullRequestNumber string
 }
 
-func (pr PullRequest) Create(newPullRequest model.PullRequest) (*model.PullRequest, error) {
-	pullRequestNumber, err := getNextNumberFromRepo(newPullRequest.Repo.Name, newPullRequest.Repo.Owner.Username)
+func CreatePullRequest(newPullRequest model.PullRequest) (*model.PullRequest, error) {
+	pullRequestNumber, err := repository.GetNextNumberFromRepo(newPullRequest.Repo.Name, newPullRequest.Repo.Owner.Username)
 	if err != nil {
 		return nil, err
 	}
 	newPullRequest.PullRequestNumber = pullRequestNumber
 
-	return pr.createPullRequest(newPullRequest)
+	return createPullRequest(newPullRequest)
 }
 
-func (pr PullRequest) createPullRequest(newPullRequest model.PullRequest) (*model.PullRequest, error) {
+func createPullRequest(newPullRequest model.PullRequest) (*model.PullRequest, error) {
 	prEntity := entities.NewPullRequest(
 		newPullRequest.Title,
 		newPullRequest.Content,
@@ -47,13 +47,13 @@ func (pr PullRequest) createPullRequest(newPullRequest model.PullRequest) (*mode
 	}
 
 	input := &dynamodb.PutItemInput{
-		TableName:           tableName(),
+		TableName:           database.TableName(),
 		Item:                item,
 		ReturnValues:        aws.String(dynamodb.ReturnValueNone),
-		ConditionExpression: generateAttrNotExistsExpression("PK", "SK"),
+		ConditionExpression: database.GenerateAttrNotExistsExpression("PK", "SK"),
 	}
 
-	if _, err = dynamoDbClient.PutItem(input); err != nil {
+	if _, err = database.DBClient().PutItem(input); err != nil {
 		return nil, err
 	}
 
@@ -62,7 +62,7 @@ func (pr PullRequest) createPullRequest(newPullRequest model.PullRequest) (*mode
 	return &created, nil
 }
 
-func (pr PullRequest) FindOne(input PullRequestFindOneInput) (*model.PullRequest, error) {
+func FindPullRequest(input FindPullRequestInput) (*model.PullRequest, error) {
 	prNumber, err := strconv.Atoi(input.PullRequestNumber)
 	if err != nil {
 		return nil, fmt.Errorf("could find pull request %w", err)
@@ -75,11 +75,11 @@ func (pr PullRequest) FindOne(input PullRequestFindOneInput) (*model.PullRequest
 	}
 
 	getInput := &dynamodb.GetItemInput{
-		TableName: tableName(),
+		TableName: database.TableName(),
 		Key:       item.Key(),
 	}
 
-	itemOutput, err := dynamoDbClient.GetItem(getInput)
+	itemOutput, err := database.DBClient().GetItem(getInput)
 
 	if err != nil || itemOutput.Item == nil {
 		return nil, fmt.Errorf("could not find pull request. error %v, item:: %v\n", err, itemOutput.Item)
@@ -90,7 +90,7 @@ func (pr PullRequest) FindOne(input PullRequestFindOneInput) (*model.PullRequest
 	return &prValue, nil
 }
 
-func (pr PullRequest) GetAll(repo, owner, status string) (*model.Repo, []model.PullRequest, error) {
+func GetPullRequests(repo, owner, status string) (*model.Repo, []model.PullRequest, error) {
 	var prs []model.PullRequest
 	shouldLookOpen := status == "" || strings.ToUpper(strings.TrimSpace(status)) == entities.PullRequestOpenStatus
 
@@ -102,7 +102,7 @@ func (pr PullRequest) GetAll(repo, owner, status string) (*model.Repo, []model.P
 	gsiPK, gsiSK := entity.GSI1()
 
 	input := &dynamodb.QueryInput{
-		TableName:              tableName(),
+		TableName:              database.TableName(),
 		IndexName:              aws.String("GSI1"),
 		KeyConditionExpression: aws.String("#pk = :pk AND #sk >= :sk"),
 		ExpressionAttributeNames: map[string]*string{
@@ -126,7 +126,7 @@ func (pr PullRequest) GetAll(repo, owner, status string) (*model.Repo, []model.P
 		ReturnConsumedCapacity: aws.String(dynamodb.ReturnConsumedCapacityTotal),
 	}
 
-	queryOutput, err := dynamoDbClient.Query(input)
+	queryOutput, err := database.DBClient().Query(input)
 
 	if err != nil {
 		return nil, prs, fmt.Errorf("error fetching pull requests: %w", err)

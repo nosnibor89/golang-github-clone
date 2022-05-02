@@ -3,7 +3,7 @@ package repos
 import (
 	"flag"
 	"fmt"
-	"github-clone/src/database"
+	"github-clone/src/database/repository"
 	cliUtil "github-clone/src/github-clone-cli/config"
 )
 
@@ -34,8 +34,7 @@ func (command *DeleteRepoCommand) Run() error {
 		return err
 	}
 
-	repo := database.Repository{}
-	if err := repo.Delete(command.repo, cliUtil.GetCLIUser()); err != nil {
+	if err := repository.DeleteRepository(command.repo, cliUtil.GetCLIUser()); err != nil {
 		return err
 	}
 

@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"github-clone/src/database"
+	dbIssue "github-clone/src/database/issue"
 	"github-clone/src/errors"
 	"github-clone/src/model"
 	"github.com/aws/aws-lambda-go/events"
@@ -12,7 +12,6 @@ import (
 
 var (
 	issue = model.Issue{}
-	db    = database.Issue{}
 )
 
 func handleRequest(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -35,7 +34,7 @@ func handleRequest(_ context.Context, request events.APIGatewayProxyRequest) (ev
 	}
 	issue.WithCreator(user)
 
-	newIssue, err := db.Create(issue)
+	newIssue, err := dbIssue.CreateIssue(issue)
 
 	if err != nil {
 		httpError := errors.HttpErrorFromException(err)

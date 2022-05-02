@@ -3,21 +3,19 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"github-clone/src/database"
+	"github-clone/src/database/issue"
 	"github-clone/src/errors"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"net/http"
 )
 
-var db = database.Issue{}
-
 func handleRequest(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	repo := request.PathParameters["repo"]
 	owner := request.PathParameters["owner"]
 	status := request.QueryStringParameters["status"]
 
-	foundRepo, issues, err := db.GetIssues(repo, owner, status)
+	foundRepo, issues, err := issue.GetIssues(repo, owner, status)
 
 	if err != nil {
 		httpError := errors.HttpErrorFromException(err)
