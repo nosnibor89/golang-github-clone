@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"github-clone/src/github-clone-cli/migrations"
 	"github-clone/src/util"
 	"strings"
 )
@@ -12,7 +13,9 @@ const (
 	executeMigrationCommand = "migration.execute"
 )
 
-var knownMigrations []Migration
+var knownMigrations = []Migration{
+	migrations.UpdateRepoStarsMigration{},
+}
 
 type Migration interface {
 	Name() string
@@ -28,6 +31,8 @@ func NewExecuteMigrationCommand() *ExecuteMigrationCommand {
 	command := &ExecuteMigrationCommand{
 		flagSet: flag.NewFlagSet(executeMigrationCommand, flag.ContinueOnError),
 	}
+
+	command.flagSet.StringVar(&command.name, "name", "", "migration name")
 
 	return command
 }

@@ -148,6 +148,39 @@ Resources:
             Path: /repos/{owner}/{repo}/pull
             Method: GET
 
+  starRepo:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: starrepo
+      CodeUri: src/handlers/starrepo
+      Description: Allows an user to star a repo
+      Policies:
+        - CloudWatchLambdaInsightsExecutionRolePolicy
+        - DynamoDBCrudPolicy:
+            TableName: !Ref githubCloneTable
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /repos/{owner}/{repo}/star
+            Method: POST
+  getRepoStargazers:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: getstargazers
+      CodeUri: src/handlers/getstargazers
+      Description: Get Stargazers for repo
+      Policies:
+        - CloudWatchLambdaInsightsExecutionRolePolicy
+        - DynamoDBCrudPolicy:
+            TableName: !Ref githubCloneTable
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /repos/{owner}/{repo}/star
+            Method: GET
+
   #            Table Definition
   githubCloneTable:
     Type: AWS::DynamoDB::Table

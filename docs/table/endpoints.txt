@@ -11,3 +11,7 @@ Pull Requests
     Create Pull Request: POST repos/{owner}/{repo}/pull
     Get Pull Request: GET repos/{owner}/{repo}/pull/{prNumber}
     Get Repo Pull Requests: GET repo/{owner}/{repo}/pull
+
+Stargazers
+    Star a repo: POST repos/{owner}/{repo}/star
+    Get Stargazers for repo: GET repos/{owner}/{repo}/star
