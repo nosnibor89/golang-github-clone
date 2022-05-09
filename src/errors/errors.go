@@ -2,7 +2,9 @@ package errors
 
 import (
 	"errors"
+	"fmt"
 	"github-clone/src/model"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"log"
 	"net/http"
 	"strings"
@@ -20,6 +22,27 @@ func (m HttpError) Error() string {
 
 func HttpErrorFromException(e error) HttpError {
 	log.Printf("ERROR: %v", e)
+
+	switch t := errors.Unwrap(e).(type) {
+	case *dynamodb.ConditionalCheckFailedException:
+	case *dynamodb.TransactionCanceledException:
+		fmt.Println(t.CancellationReasons)
+		return HttpError{
+			Code:    http.StatusConflict,
+			Message: "item already exists",
+		}
+	}
+
+	switch t := e.(type) {
+	case *dynamodb.ConditionalCheckFailedException:
+	case *dynamodb.TransactionCanceledException:
+		fmt.Println(t.CancellationReasons)
+		return HttpError{
+			Code:    http.StatusConflict,
+			Message: "item already exists",
+		}
+	}
+
 	if strings.Contains(e.Error(), "ConditionalCheckFailedException:") {
 		return HttpError{
 			Code:    http.StatusConflict,
