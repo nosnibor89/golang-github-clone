@@ -164,6 +164,23 @@ Resources:
           Properties:
             Path: /repos/{owner}/{repo}/star
             Method: POST
+
+  unStarRepo:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: unstarrepo
+      CodeUri: src/handlers/unstarrepo
+      Description: Allows an user to un-star a repo
+      Policies:
+        - CloudWatchLambdaInsightsExecutionRolePolicy
+        - DynamoDBCrudPolicy:
+            TableName: !Ref githubCloneTable
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /repos/{owner}/{repo}/star
+            Method: DELETE
   getRepoStargazers:
     Type: AWS::Serverless::Function
     Properties:

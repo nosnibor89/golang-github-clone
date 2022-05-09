@@ -14,4 +14,5 @@ Pull Requests
 
 Stargazers
     Star a repo: POST repos/{owner}/{repo}/star
+    Un star a repo: DELETE repos/{owner}/{repo}/star
     Get Stargazers for repo: GET repos/{owner}/{repo}/star

@@ -23,6 +23,12 @@ func NewStar(repoName, repoOwner, username string) Star {
 	}
 }
 
+func (s Star) Key() Attrs {
+	ad := s.initialAttributeDefinition()
+
+	return ad.getPrimaryKey()
+}
+
 func (s Star) PartitionKey() string {
 	return fmt.Sprintf("REPO#%s#%s", strings.ToLower(s.RepoOwner), strings.ToLower(s.RepoName))
 }
@@ -33,7 +39,7 @@ func (s Star) ToItem() (Attrs, error) {
 	ad := s.initialAttributeDefinition()
 	ad.withStringAttribute("RepoOwner", s.RepoOwner).
 		withStringAttribute("RepoName", s.RepoName).
-		withStringAttribute("Username", s.RepoOwner).
+		withStringAttribute("Username", s.Username).
 		withStringAttribute("CreatedAt", parseTimeItem(s.CreatedAt)).
 		withStringAttribute("UpdatedAt", parseTimeItem(s.UpdatedAt))
 

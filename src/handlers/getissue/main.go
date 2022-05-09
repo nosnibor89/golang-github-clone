@@ -11,9 +11,6 @@ import (
 	"net/http"
 )
 
-/*
-	At this point any user can ask for any other user's repo which is what GitHub does, but maybe we need to handle that in a different way
-*/
 func handleRequest(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	repo := request.PathParameters["repo"]
 	owner := request.PathParameters["owner"]

@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"encoding/json"
-	starsDB "github-clone/src/database/stars"
+	"github-clone/src/database/stars"
 	"github-clone/src/errors"
+	"github-clone/src/model"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"net/http"
@@ -14,24 +14,15 @@ func handleRequest(_ context.Context, request events.APIGatewayProxyRequest) (ev
 	repo := request.PathParameters["repo"]
 	owner := request.PathParameters["owner"]
 
-	foundRepo, stargazers, err := starsDB.FindStargazers(repo, owner)
+	user := model.GetUserFromRequest(request)
 
-	if err != nil {
+	if err := stars.UnStarRepo(repo, owner, user.Username); err != nil {
 		httpError := errors.HttpErrorFromException(err)
-		return events.APIGatewayProxyResponse{
-			StatusCode: httpError.Code,
-			Body:       httpError.Message,
-		}, nil
+		return events.APIGatewayProxyResponse{Body: httpError.Message, StatusCode: httpError.Code}, nil
 	}
 
-	body, _ := json.Marshal(map[string]interface{}{
-		"repo":       foundRepo,
-		"stargazers": stargazers,
-	})
-
 	return events.APIGatewayProxyResponse{
-		StatusCode: http.StatusOK,
-		Body:       string(body),
+		StatusCode: http.StatusNoContent,
 	}, nil
 }
 
