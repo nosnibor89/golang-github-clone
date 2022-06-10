@@ -3,7 +3,7 @@ package pullrequest
 import (
 	"fmt"
 	"github-clone/src/database"
-	"github-clone/src/database/entities"
+	entities2 "github-clone/src/database/internal/entities"
 	"github-clone/src/database/repository"
 	"github-clone/src/model"
 	"github-clone/src/util"
@@ -20,7 +20,7 @@ type FindPullRequestInput struct {
 	PullRequestNumber string
 }
 
-func CreatePullRequest(newPullRequest model.PullRequest) (*model.PullRequest, error) {
+func Create(newPullRequest model.PullRequest) (*model.PullRequest, error) {
 	pullRequestNumber, err := repository.GetNextNumberFromRepo(newPullRequest.Repo.Name, newPullRequest.Repo.Owner.Username)
 	if err != nil {
 		return nil, err
@@ -31,7 +31,7 @@ func CreatePullRequest(newPullRequest model.PullRequest) (*model.PullRequest, er
 }
 
 func createPullRequest(newPullRequest model.PullRequest) (*model.PullRequest, error) {
-	prEntity := entities.NewPullRequest(
+	prEntity := entities2.NewPullRequest(
 		newPullRequest.Title,
 		newPullRequest.Content,
 		newPullRequest.Repo.Name,
@@ -62,13 +62,13 @@ func createPullRequest(newPullRequest model.PullRequest) (*model.PullRequest, er
 	return &created, nil
 }
 
-func FindPullRequest(input FindPullRequestInput) (*model.PullRequest, error) {
+func FindOne(input FindPullRequestInput) (*model.PullRequest, error) {
 	prNumber, err := strconv.Atoi(input.PullRequestNumber)
 	if err != nil {
 		return nil, fmt.Errorf("could find pull request %w", err)
 	}
 
-	item := entities.PullRequest{
+	item := entities2.PullRequest{
 		RepoOwner:         input.Owner,
 		RepoName:          input.Repo,
 		PullRequestNumber: prNumber,
@@ -90,11 +90,11 @@ func FindPullRequest(input FindPullRequestInput) (*model.PullRequest, error) {
 	return &prValue, nil
 }
 
-func GetPullRequests(repo, owner, status string) (*model.Repo, []model.PullRequest, error) {
+func Find(repo, owner, status string) (*model.Repo, []model.PullRequest, error) {
 	var prs []model.PullRequest
-	shouldLookOpen := status == "" || strings.ToUpper(strings.TrimSpace(status)) == entities.PullRequestOpenStatus
+	shouldLookOpen := status == "" || strings.ToUpper(strings.TrimSpace(status)) == entities2.PullRequestOpenStatus
 
-	entity := entities.PullRequest{
+	entity := entities2.PullRequest{
 		RepoOwner: owner,
 		RepoName:  repo,
 	}
@@ -140,8 +140,8 @@ func GetPullRequests(repo, owner, status string) (*model.Repo, []model.PullReque
 		log.Printf("[Trace]Count: %d", *queryOutput.Count)
 	}
 
-	prs = entities.ToList[model.PullRequest](prItems, entity)
-	repoEntity := entities.GithubRepo{}
+	prs = entities2.ToList[model.PullRequest](prItems, entity)
+	repoEntity := entities2.GithubRepo{}
 
 	repoValue := repoEntity.ToModelFromAttrs(repoItem)
 	return &repoValue, prs, nil

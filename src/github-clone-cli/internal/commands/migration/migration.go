@@ -4,7 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github-clone/src/github-clone-cli/migrations"
+	"github-clone/src/github-clone-cli/internal/migrations"
 	"github-clone/src/util"
 	"strings"
 )

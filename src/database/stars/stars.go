@@ -3,7 +3,7 @@ package stars
 import (
 	"fmt"
 	"github-clone/src/database"
-	"github-clone/src/database/entities"
+	entities2 "github-clone/src/database/internal/entities"
 	"github-clone/src/model"
 	"github-clone/src/util"
 	"github.com/aws/aws-sdk-go/aws"
@@ -12,12 +12,12 @@ import (
 )
 
 func StarRepo(repo, owner, username string) error {
-	repoItem := entities.GithubRepo{
+	repoItem := entities2.GithubRepo{
 		Name:  repo,
 		Owner: owner,
 	}
 
-	star := entities.NewStar(repo, owner, username)
+	star := entities2.NewStar(repo, owner, username)
 
 	starItem, err := star.ToItem()
 
@@ -61,12 +61,12 @@ func StarRepo(repo, owner, username string) error {
 }
 
 func UnStarRepo(repo, owner, username string) error {
-	repoItem := entities.GithubRepo{
+	repoItem := entities2.GithubRepo{
 		Name:  repo,
 		Owner: owner,
 	}
 
-	star := entities.Star{
+	star := entities2.Star{
 		RepoName:  repo,
 		RepoOwner: owner,
 		Username:  username,
@@ -109,7 +109,7 @@ func UnStarRepo(repo, owner, username string) error {
 func FindStargazers(repo, owner string) (*model.Repo, []string, error) {
 	var stargazers []string
 
-	entity := entities.Star{
+	entity := entities2.Star{
 		RepoOwner: owner,
 		RepoName:  repo,
 	}
@@ -148,12 +148,12 @@ func FindStargazers(repo, owner string) (*model.Repo, []string, error) {
 		log.Printf("[Trace]Count: %d", *queryOutput.Count)
 	}
 
-	repoEntity := entities.GithubRepo{}
+	repoEntity := entities2.GithubRepo{}
 	repoValue := repoEntity.ToModelFromAttrs(repoItem)
 	return &repoValue, toStargazers(starItems), nil
 }
 
-func toStargazers(starItems []entities.Attrs) []string {
+func toStargazers(starItems []entities2.Attrs) []string {
 	var stargazers []string
 
 	for _, item := range starItems {

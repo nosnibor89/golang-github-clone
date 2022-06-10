@@ -28,7 +28,7 @@ func handleRequest(_ context.Context, request events.APIGatewayProxyRequest) (ev
 		PullRequestNumber: prNumber,
 	}
 
-	found, err := pullrequest.FindPullRequest(input)
+	found, err := pullrequest.FindOne(input)
 
 	if err != nil {
 		return events.APIGatewayProxyResponse{

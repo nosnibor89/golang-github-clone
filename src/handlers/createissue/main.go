@@ -34,7 +34,7 @@ func handleRequest(_ context.Context, request events.APIGatewayProxyRequest) (ev
 	}
 	issue.WithCreator(user)
 
-	newIssue, err := dbIssue.CreateIssue(issue)
+	newIssue, err := dbIssue.Create(issue)
 
 	if err != nil {
 		httpError := errors.HttpErrorFromException(err)

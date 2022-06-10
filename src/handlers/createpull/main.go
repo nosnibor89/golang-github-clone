@@ -35,7 +35,7 @@ func handleRequest(_ context.Context, request events.APIGatewayProxyRequest) (ev
 
 	pullRequest.WithCreator(user)
 
-	newPullRequest, err := pullrequest.CreatePullRequest(pullRequest)
+	newPullRequest, err := pullrequest.Create(pullRequest)
 
 	if err != nil {
 		httpError := errors.HttpErrorFromException(err)

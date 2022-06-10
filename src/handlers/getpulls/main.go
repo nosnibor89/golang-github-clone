@@ -15,7 +15,7 @@ func handleRequest(_ context.Context, request events.APIGatewayProxyRequest) (ev
 	owner := request.PathParameters["owner"]
 	status := request.QueryStringParameters["status"]
 
-	foundRepo, issues, err := pullrequest.GetPullRequests(repo, owner, status)
+	foundRepo, issues, err := pullrequest.Find(repo, owner, status)
 
 	if err != nil {
 		httpError := errors.HttpErrorFromException(err)

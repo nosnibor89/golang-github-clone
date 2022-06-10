@@ -3,7 +3,7 @@ package issue
 import (
 	"fmt"
 	"github-clone/src/database"
-	"github-clone/src/database/entities"
+	entities2 "github-clone/src/database/internal/entities"
 	"github-clone/src/database/repository"
 	"github-clone/src/model"
 	"github-clone/src/util"
@@ -18,7 +18,7 @@ type FindIssueInput struct {
 	Repo, Owner, IssueNumber string
 }
 
-func CreateIssue(newIssue model.Issue) (*model.Issue, error) {
+func Create(newIssue model.Issue) (*model.Issue, error) {
 	issueNumber, err := repository.GetNextNumberFromRepo(newIssue.Repo.Name, newIssue.Repo.Owner.Username)
 	if err != nil {
 		return nil, err
@@ -28,11 +28,11 @@ func CreateIssue(newIssue model.Issue) (*model.Issue, error) {
 	return createIssue(newIssue)
 }
 
-func GetIssues(repo, owner, status string) (*model.Repo, []model.Issue, error) {
+func Find(repo, owner, status string) (*model.Repo, []model.Issue, error) {
 	var issues []model.Issue
-	shouldLookOpenIssues := status == "" || strings.ToUpper(strings.TrimSpace(status)) == entities.IssueOpenStatus
+	shouldLookOpenIssues := status == "" || strings.ToUpper(strings.TrimSpace(status)) == entities2.IssueOpenStatus
 
-	entity := entities.Issue{
+	entity := entities2.Issue{
 		RepoOwner: owner,
 		RepoName:  repo,
 	}
@@ -75,21 +75,21 @@ func GetIssues(repo, owner, status string) (*model.Repo, []model.Issue, error) {
 		log.Printf("[Trace]Count: %d", *queryOutput.Count)
 	}
 
-	issues = entities.ToList[model.Issue](issueItems, entity)
+	issues = entities2.ToList[model.Issue](issueItems, entity)
 
-	repoEntity := entities.GithubRepo{}
+	repoEntity := entities2.GithubRepo{}
 
 	repoValue := repoEntity.ToModelFromAttrs(repoItem)
 	return &repoValue, issues, nil
 }
 
-func FindIssue(input FindIssueInput) (*model.Issue, error) {
+func FindOne(input FindIssueInput) (*model.Issue, error) {
 	issueNumber, err := strconv.Atoi(input.IssueNumber)
 	if err != nil {
 		return nil, fmt.Errorf("could find issue %w", err)
 	}
 
-	item := entities.Issue{
+	item := entities2.Issue{
 		IssueNumber: issueNumber,
 		RepoName:    input.Repo,
 		RepoOwner:   input.Owner,
@@ -112,7 +112,7 @@ func FindIssue(input FindIssueInput) (*model.Issue, error) {
 }
 
 func createIssue(newIssue model.Issue) (*model.Issue, error) {
-	issueEntity := entities.NewIssue(
+	issueEntity := entities2.NewIssue(
 		newIssue.Title,
 		newIssue.Content,
 		newIssue.Repo.Name,

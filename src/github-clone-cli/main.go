@@ -3,10 +3,10 @@ package main
 import (
 	"errors"
 	"fmt"
-	commands2 "github-clone/src/github-clone-cli/commands"
-	"github-clone/src/github-clone-cli/commands/migration"
-	repoCommands "github-clone/src/github-clone-cli/commands/repos"
-	cliUtil "github-clone/src/github-clone-cli/config"
+	commands2 "github-clone/src/github-clone-cli/internal/commands"
+	"github-clone/src/github-clone-cli/internal/commands/migration"
+	"github-clone/src/github-clone-cli/internal/commands/repos"
+	cliUtil "github-clone/src/github-clone-cli/internal/config"
 	"github-clone/src/util"
 	"os"
 )
@@ -34,8 +34,8 @@ func parse(args []string) error {
 	}
 
 	commands := []commands2.Runner{
-		repoCommands.NewDeleteRepoCommand(),
-		repoCommands.NewFindOneRepoCommand(),
+		repos.NewDeleteRepoCommand(),
+		repos.NewFindOneRepoCommand(),
 		migration.NewExecuteMigrationCommand(),
 	}
 

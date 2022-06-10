@@ -22,7 +22,7 @@ func handleRequest(_ context.Context, request events.APIGatewayProxyRequest) (ev
 		IssueNumber: issueNumber,
 	}
 
-	found, err := issue.FindIssue(input)
+	found, err := issue.FindOne(input)
 
 	if err != nil {
 		log.Println(err)

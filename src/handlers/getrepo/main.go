@@ -17,7 +17,7 @@ func handleRequest(_ context.Context, request events.APIGatewayProxyRequest) (ev
 	repo := request.PathParameters["repo"]
 	owner := request.PathParameters["owner"]
 
-	found := repository.FindRepository(repo, owner)
+	found := repository.FindOne(repo, owner)
 
 	if found == nil {
 		log.Printf("repo with owner %s and name %s was not found", owner, repo)

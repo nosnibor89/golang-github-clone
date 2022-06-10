@@ -3,7 +3,7 @@ package migrations
 import (
 	"fmt"
 	"github-clone/src/database"
-	"github-clone/src/database/entities"
+	"github-clone/src/database/internal/entities"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 )

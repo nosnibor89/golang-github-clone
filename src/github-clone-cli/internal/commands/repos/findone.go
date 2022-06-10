@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github-clone/src/database/repository"
-	cliUtil "github-clone/src/github-clone-cli/config"
+	cliUtil "github-clone/src/github-clone-cli/internal/config"
 	util2 "github-clone/src/util"
 	"github.com/aws/aws-sdk-go/aws/awsutil"
 )
@@ -36,7 +36,7 @@ func (command *FindOneRepoCommand) Run() error {
 		return err
 	}
 
-	found := repository.FindRepository(command.repo, cliUtil.GetCLIUser())
+	found := repository.FindOne(command.repo, cliUtil.GetCLIUser())
 
 	if found == nil {
 		util2.PrintRed(fmt.Sprintf("No repo found with name %v", command.repo))

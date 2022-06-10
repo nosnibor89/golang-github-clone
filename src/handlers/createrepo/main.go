@@ -26,7 +26,7 @@ func handleRequest(_ context.Context, request events.APIGatewayProxyRequest) (ev
 	}
 
 	repo.Owner = user
-	newRepo, err := repository.CreateRepository(repo)
+	newRepo, err := repository.Create(repo)
 
 	if err != nil {
 		httpError := errors.HttpErrorFromException(err)

@@ -3,7 +3,7 @@ package repository
 import (
 	"fmt"
 	"github-clone/src/database"
-	"github-clone/src/database/entities"
+	"github-clone/src/database/internal/entities"
 	"github-clone/src/model"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
@@ -12,7 +12,7 @@ import (
 
 const noIssuePRNumberMessage = "could not assign issue number"
 
-func FindRepository(name, owner string) *model.Repo {
+func FindOne(name, owner string) *model.Repo {
 	item := entities.GithubRepo{
 		Name:  name,
 		Owner: owner,
@@ -34,7 +34,7 @@ func FindRepository(name, owner string) *model.Repo {
 	return &repoValue
 }
 
-func CreateRepository(newRepo model.Repo) (*model.Repo, error) {
+func Create(newRepo model.Repo) (*model.Repo, error) {
 	repoEntity := entities.NewGithubRepo(newRepo.Name, newRepo.Owner.Username, newRepo.Description)
 
 	item, err := repoEntity.ToItem()
@@ -59,7 +59,7 @@ func CreateRepository(newRepo model.Repo) (*model.Repo, error) {
 	return &created, nil
 }
 
-func DeleteRepository(name, owner string) error {
+func Delete(name, owner string) error {
 	repoEntity := entities.NewGithubRepo(name, owner, "")
 
 	params := &dynamodb.DeleteItemInput{
