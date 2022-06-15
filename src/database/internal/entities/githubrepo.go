@@ -39,6 +39,7 @@ func (r GithubRepo) ToItem() (Attrs, error) {
 		withStringAttribute("Owner", r.Owner).
 		withStringAttribute("Description", r.Description).
 		withIntAttribute("IssuePRNumber", "0").
+		withIntAttribute("StarCount", "0").
 		withStringAttribute("CreatedAt", parseTimeItem(r.CreatedAt)).
 		withStringAttribute("UpdatedAt", parseTimeItem(r.UpdatedAt)).
 		withSecondaryIndexKey(1, gs1, gs1)
