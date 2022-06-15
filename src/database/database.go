@@ -1,3 +1,4 @@
+// Package database handles transactions made to DynamoDB
 package database
 
 import (
@@ -15,7 +16,7 @@ const (
 
 var dynamoDbClient *dynamodb.DynamoDB
 
-type ScanCallback = func(item map[string]*dynamodb.AttributeValue) error
+type scanCallback = func(item map[string]*dynamodb.AttributeValue) error
 
 func init() {
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
@@ -28,11 +29,14 @@ func TableName() *string {
 	return aws.String(os.Getenv(tableNameEnvVar))
 }
 
+// DBClient returns the connection client to DynamoDB
 func DBClient() *dynamodb.DynamoDB {
 	return dynamoDbClient
 }
 
-func ScanFilterByType(filterByType string, cb ScanCallback) error {
+// ScanFilterByType scans the table and executes operation for each item. The `cb` or callback provided will be executed for items with Type property that
+// that matches the type provided in `filterByType`
+func ScanFilterByType(filterByType string, cb scanCallback) error {
 	input := &dynamodb.ScanInput{
 		TableName: TableName(),
 	}
@@ -70,10 +74,6 @@ func ScanFilterByType(filterByType string, cb ScanCallback) error {
 	}
 
 	return nil
-}
-
-func ScanAll(cb ScanCallback) error {
-	return ScanFilterByType("", cb)
 }
 
 func GenerateAttrNotExistsExpression(fields ...string) *string {
